@@ -211,7 +211,7 @@ jne errSpdSpec_
 mov rax, 0
 mov r8, 0
 lea r9, byte[rbp - 17]
-mov qword r13, qword[r14 + 16]
+mov r13, qword[r14 + 16]
 
 arg2Lp:
 cmp byte[r13 + r8], NULL
@@ -221,13 +221,12 @@ mov byte[r9 + r8], al
 inc r8
 jmp arg2Lp
 
+arg2Convert:
 ; !!! FOR TESTING ONLY !!!
-cmp byte[r9], 2
+cmp byte[r9], "2"
 jne next
 mov rax, FALSE
 next:
-
-; arg2Convert:
 ; mov byte[r9 + r8], NULL
 ; mov rdi, r9
 ; mov rsi, rdx
