@@ -194,6 +194,7 @@ je errUsage				; jump to errUsage
 cmp r12, 7
 jne errBadCL
 
+
 ; check errSpdSpec
 mov r13, qword[r14 + 8]
 ; check argv[1] for "-sp"
@@ -205,6 +206,37 @@ cmp byte[r13 + 2], 'p'
 jne errSpdSpec
 cmp byte[r13 + 3], NULL
 jne errSpdSpec
+
+; check errSpdValue
+
+
+; check errClrSpec
+mov r13, qword[r14 + 24]
+; check argv[3] for -cl
+cmp byte[r13], '-'
+jne errClrSpec
+cmp byte[r13 + 1], 'c'
+jne errClrSpec
+cmp byte[r13 + 2], 'l'
+jne errClrSpec
+cmp byte[r13 + 3], NULL
+jne errClrSpec
+
+; check errClrValue
+
+
+; check 
+; check errSizSpec
+mov r13, qword[r14 + 40]
+; check argv[3] for "-sz"
+cmp byte[r13], '-'
+jne errSizSpec
+cmp byte[r13 + 1], 's'
+jne errSizSpec
+cmp byte[r13 + 2], 'z'
+jne errSizSpec
+cmp byte[r13 + 3], NULL
+jne errSizSpec
 
 
 
@@ -221,8 +253,20 @@ errSpdSpec:
 mov rdi, errSpdSpec
 jmp doneError
 
+errSpdValue:
+mov rdi, errSpdValue
+jmp doneError
 
+errClrSpec:
+mov rdi, errClrSpec
+jmp doneError
 
+errClrValue:
+mov rdi
+
+errSizSpec:
+mov rdi, errSizSpec
+jmp doneError
 
 doneError:
 call printString
