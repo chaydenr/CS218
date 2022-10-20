@@ -199,13 +199,13 @@ jne errBadCL_
 mov r13, qword[r14 + 8]
 ; check argv[1] for "-sp"
 cmp byte[r13], '-'
-jne errSpdSpec
+jne errSpdSpec_
 cmp byte[r13 + 1], 's'
-jne errSpdSpec
+jne errSpdSpec_
 cmp byte[r13 + 2], 'p'
-jne errSpdSpec
+jne errSpdSpec_
 cmp byte[r13 + 3], NULL
-jne errSpdSpec
+jne errSpdSpec_
 
 ; check errSpdValue
 
@@ -214,13 +214,13 @@ jne errSpdSpec
 mov r13, qword[r14 + 24]
 ; check argv[3] for -cl
 cmp byte[r13], '-'
-jne errClrSpec
+jne errClrSpec_
 cmp byte[r13 + 1], 'c'
-jne errClrSpec
+jne errClrSpec_
 cmp byte[r13 + 2], 'l'
-jne errClrSpec
+jne errClrSpec_
 cmp byte[r13 + 3], NULL
-jne errClrSpec
+jne errClrSpec_
 
 ; check errClrValue
 
@@ -230,13 +230,13 @@ jne errClrSpec
 mov r13, qword[r14 + 40]
 ; check argv[3] for "-sz"
 cmp byte[r13], '-'
-jne errSizSpec
+jne errSizSpec_
 cmp byte[r13 + 1], 's'
-jne errSizSpec
+jne errSizSpec_
 cmp byte[r13 + 2], 'z'
-jne errSizSpec
+jne errSizSpec_
 cmp byte[r13 + 3], NULL
-jne errSizSpec
+jne errSizSpec_
 
 
 
@@ -249,22 +249,22 @@ errBadCL_:
 mov rdi, errBadCL
 jmp doneError
 
-errSpdSpec:
+errSpdSpec_:
 mov rdi, errSpdSpec
 jmp doneError
 
-errSpdValue:
+errSpdValue_:
 mov rdi, errSpdValue
 jmp doneError
 
-errClrSpec:
+errClrSpec_:
 mov rdi, errClrSpec
 jmp doneError
 
-errClrValue:
+errClrValue_:
 mov rdi
 
-errSizSpec:
+errSizSpec_:
 mov rdi, errSizSpec
 jmp doneError
 
