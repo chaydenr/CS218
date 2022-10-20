@@ -171,7 +171,7 @@ global getParams
 getParams:
 push rbp
 mov rbp, rsp
-sub rsp, 28
+sub rsp, 39
 
 push r8
 push r9
@@ -224,9 +224,9 @@ jmp arg2Lp
 arg2Convert:
 ; !!! FOR TESTING ONLY !!!
 cmp byte[r9], "2"
-jne next
+jne next1
 mov rax, FALSE
-next:
+next1:
 ; mov byte[r9 + r8], NULL
 ; mov rdi, r9
 ; mov rsi, rdx
@@ -249,7 +249,33 @@ cmp byte[r13 + 3], NULL
 jne errClrSpec_
 
 ; check errClrValue
+mov rax, 0
+mov r8, 0
+lea r9, byte[rbp - 28]
+mov r13, qword[r14 + 32]
 
+arg4Lp:
+cmp byte[r13 + r8], NULL
+je arg4Convert
+mov al, byte[r13 + r8]
+mov byte[r9 + r8], al
+inc r8
+jmp arg4Lp
+
+arg4Convert:
+; !!! FOR TESTING ONLY !!!
+cmp byte[r9], "2"
+jne next2
+mov rax, FALSE
+next2:
+; mov byte[r9 + r8], NULL
+; mov rdi, r9
+; mov rsi, rdx
+
+; call aSept2int
+
+cmp rax, FALSE
+je errClrValue_
 
 ; check 
 ; check errSizSpec
@@ -263,6 +289,35 @@ cmp byte[r13 + 2], 'z'
 jne errSizSpec_
 cmp byte[r13 + 3], NULL
 jne errSizSpec_
+
+;check errSizValue
+mov rax, 0
+mov r8, 0
+lea r9, byte[rbp - 39]
+mov r13, qword[r14 + 48]
+
+arg6Lp:
+cmp byte[r13 + r8], NULL
+je arg6Convert
+mov al, byte[r13 + r8]
+mov byte[r9 + r8], al
+inc r8
+jmp arg6Lp
+
+arg6Convert:
+; !!! FOR TESTING ONLY !!!
+cmp byte[r9], "2"
+jne next3
+mov rax, FALSE
+next3:
+; mov byte[r9 + r8], NULL
+; mov rdi, r9
+; mov rsi, rdx
+
+; call aSept2int
+
+cmp rax, FALSE
+je errSizValue_
 
 mov rax, TRUE
 jmp doneSuccess
