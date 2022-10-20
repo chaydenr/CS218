@@ -537,9 +537,9 @@ cmp r14, 50
 je convFail
 
 mov r11b, byte[rdi + r10]
-mov rdx, 2
+mov rdx, 7
 cmp r11b, NULL
-je convDone
+je convEnd
 
 conv2Int:
 cmp r11b, ' '
