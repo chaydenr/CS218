@@ -188,11 +188,11 @@ push rsi
 
 ; check errUsage
 cmp r12, 1				; check if argc = 1
-je errUsage				; jump to errUsage
+je errUsage_			; jump to errUsage
 
 ; check errBadCL
 cmp r12, 7
-jne errBadCL
+jne errBadCL_
 
 
 ; check errSpdSpec
@@ -241,11 +241,11 @@ jne errSizSpec
 
 
 ; !!!!!! ERROR SECTION !!!!!!!!
-errUsage:
+errUsage_:
 mov rdi, errUsage
 jmp doneError
 
-errBadCL:
+errBadCL_:
 mov rdi, errBadCL
 jmp doneError
 
