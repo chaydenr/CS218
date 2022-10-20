@@ -238,7 +238,8 @@ jne errSizSpec_
 cmp byte[r13 + 3], NULL
 jne errSizSpec_
 
-
+mov rax, TRUE
+jmp doneSuccess
 
 ; !!!!!! ERROR SECTION !!!!!!!!
 errUsage_:
@@ -262,7 +263,7 @@ mov rdi, errClrSpec
 jmp doneError
 
 errClrValue_:
-mov rdi
+; mov rdi
 
 errSizSpec_:
 mov rdi, errSizSpec
