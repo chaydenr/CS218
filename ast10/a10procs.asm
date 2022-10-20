@@ -208,7 +208,34 @@ cmp byte[r13 + 3], NULL
 jne errSpdSpec_
 
 ; check errSpdValue
+mov rax, 0
+mov r8, 0
+lea r9, byte[rbp - 17]
+mov qword r13, qword[r14 + 16]
 
+arg2Lp:
+cmp byte[r13 + r8], NULL
+je arg2Convert
+mov al, byte[r13 + r8]
+mov byte[r9 + r8], al
+inc r8
+jmp arg2Lp
+
+; !!! FOR TESTING ONLY !!!
+cmp byte[r9], 2
+jne next
+mov rax, FALSE
+next:
+
+; arg2Convert:
+; mov byte[r9 + r8], NULL
+; mov rdi, r9
+; mov rsi, rdx
+
+; call aSept2int
+
+cmp rax, FALSE
+je errSpdValue_
 
 ; check errClrSpec
 mov r13, qword[r14 + 24]
