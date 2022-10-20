@@ -234,7 +234,7 @@ mov rsi, rdx
 call aSept2int
 
 cmp rax, FALSE
-je errSpdValue_
+je errSpdSpec_
 
 cmp rax, SPD_MIN
 jl errSpdValue_
@@ -281,7 +281,7 @@ mov rsi, rdx
 call aSept2int
 
 cmp rax, FALSE
-je errClrValue_
+je errClrSpec_
 
 cmp rax, CLR_MIN
 jl errClrValue_
@@ -329,7 +329,7 @@ mov rsi, rdx
 call aSept2int
 
 cmp rax, FALSE
-je errSizValue_
+je errSizSpec_
 
 cmp rax, SIZ_MIN
 jl errSizValue_
