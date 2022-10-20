@@ -270,18 +270,24 @@ jmp arg4Lp
 
 arg4Convert:
 ; !!! FOR TESTING ONLY !!!
-cmp byte[r9], "2"
-jne next2
-mov rax, FALSE
-next2:
-; mov byte[r9 + r8], NULL
-; mov rdi, r9
-; mov rsi, rdx
+; cmp byte[r9], "2"
+; jne next2
+; mov rax, FALSE
+; next2:
+mov byte[r9 + r8], NULL
+mov rdi, r9
+mov rsi, rdx
 
-; call aSept2int
+call aSept2int
 
 cmp rax, FALSE
 je errClrValue_
+
+cmp rax, CLR_MIN
+jl errClrValue_
+
+cmp rax, CLR_MAX
+jg errClrValue_
 
 ; check 
 ; check errSizSpec
@@ -312,18 +318,24 @@ jmp arg6Lp
 
 arg6Convert:
 ; !!! FOR TESTING ONLY !!!
-cmp byte[r9], "2"
-jne next3
-mov rax, FALSE
-next3:
-; mov byte[r9 + r8], NULL
-; mov rdi, r9
-; mov rsi, rdx
+; cmp byte[r9], "2"
+; jne next3
+; mov rax, FALSE
+; next3:
+mov byte[r9 + r8], NULL
+mov rdi, r9
+mov rsi, rdx
 
-; call aSept2int
+call aSept2int
 
 cmp rax, FALSE
 je errSizValue_
+
+cmp rax, SIZ_MIN
+jl errSizValue_
+
+cmp rax, SIZ_MAX
+jg errSizValue_
 
 mov rax, TRUE
 jmp doneSuccess
