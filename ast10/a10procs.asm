@@ -236,6 +236,12 @@ call aSept2int
 cmp rax, FALSE
 je errSpdValue_
 
+cmp rax, SPD_MIN
+jl errSpdValue_
+
+cmp rax, SPD_MAX
+jg errSpdValue_
+
 ; check errClrSpec
 mov r13, qword[r14 + 24]
 ; check argv[3] for -cl
