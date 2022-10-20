@@ -223,15 +223,15 @@ jmp arg2Lp
 
 arg2Convert:
 ; !!! FOR TESTING ONLY !!!
-cmp byte[r9], "2"
-jne next1
-mov rax, FALSE
-next1:
-; mov byte[r9 + r8], NULL
-; mov rdi, r9
-; mov rsi, rdx
+; cmp byte[r9], "2"
+; jne next1
+; mov rax, FALSE
+; next1:
+mov byte[r9 + r8], NULL
+mov rdi, r9
+mov rsi, rdx
 
-; call aSept2int
+call aSept2int
 
 cmp rax, FALSE
 je errSpdValue_
@@ -510,3 +510,65 @@ prtDone:
 
 ; ******************************************************************
 
+global aSept2int
+aSept2int:
+
+push rbx
+push rcx
+push rdx
+push r12
+push r13
+push r14
+
+mov r10, 0
+mov r14, 0
+mov rax, 0
+
+jmp checkLength
+
+spaces:
+cmp rax, 0
+jne convFail
+inc r10
+
+checkLength:
+mov r11, 0
+cmp r14, 50
+je convFail
+
+mov r11b, byte[rdi + r10]
+mov rdx, 2
+cmp r11b, NULL
+je convDone
+
+conv2Int:
+cmp r11b, ' '
+je spaces
+sub r11b, '0'
+cmp r11b, 0
+jl convFail
+cmp r11b, 7
+jg convFail
+mul rdx
+add al, r11b
+inc r14
+inc r10
+jmp checkLength
+
+convSuccess:
+mov dword[rsi], eax
+mov rax, TRUE
+jmp convEnd
+
+convFail:
+mov rax, FALSE
+
+convEnd:
+pop r14
+pop r13
+pop r12
+pop rdx
+pop rcx
+pop rbx
+
+ret
