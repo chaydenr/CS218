@@ -252,7 +252,7 @@
    252                                 getParams:
    253 00000000 55                     push rbp
    254 00000001 4889E5                 mov rbp, rsp
-   255 00000004 4883EC1C               sub rsp, 28
+   255 00000004 4883EC27               sub rsp, 39
    256                                 
    257 00000008 4150                   push r8
    258 0000000A 4151                   push r9
@@ -269,24 +269,24 @@
    269                                 
    270                                 
    271 00000021 4983FC01               cmp r12, 1
-   272 00000025 0F84BC000000           je errUsage_
+   272 00000025 0F845E010000           je errUsage_
    273                                 
    274                                 
    275 0000002B 4983FC07               cmp r12, 7
-   276 0000002F 0F85BB000000           jne errBadCL_
+   276 0000002F 0F855D010000           jne errBadCL_
    277                                 
    278                                 
    279                                 
    280 00000035 4D8B6E08               mov r13, qword[r14 + 8]
    281                                 
    282 00000039 41807D002D             cmp byte[r13], '-'
-   283 0000003E 0F85B5000000           jne errSpdSpec_
+   283 0000003E 0F8557010000           jne errSpdSpec_
    284 00000044 41807D0173             cmp byte[r13 + 1], 's'
-   285 00000049 0F85AA000000           jne errSpdSpec_
+   285 00000049 0F854C010000           jne errSpdSpec_
    286 0000004F 41807D0270             cmp byte[r13 + 2], 'p'
-   287 00000054 0F859F000000           jne errSpdSpec_
+   287 00000054 0F8541010000           jne errSpdSpec_
    288 0000005A 41807D0300             cmp byte[r13 + 3], NULL
-   289 0000005F 0F8594000000           jne errSpdSpec_
+   289 0000005F 0F8536010000           jne errSpdSpec_
    290                                 
    291                                 
    292 00000065 48C7C000000000         mov rax, 0
@@ -305,9 +305,9 @@
    305                                 arg2Convert:
    306                                 
    307 00000091 41803932               cmp byte[r9], "2"
-   308 00000095 7505                   jne next
+   308 00000095 7505                   jne next1
    309 00000097 48C7C000000000         mov rax, FALSE
-   310                                 next:
+   310                                 next1:
    311                                 
    312                                 
    313                                 
@@ -315,171 +315,171 @@
    315                                 
    316                                 
    317 0000009E 4883F800               cmp rax, FALSE
-   318 000000A2 7462                   je errSpdValue_
+   318 000000A2 0F84FC000000           je errSpdValue_
    319                                 
    320                                 
-   321 000000A4 4D8B6E18               mov r13, qword[r14 + 24]
+   321 000000A8 4D8B6E18               mov r13, qword[r14 + 24]
    322                                 
-   323 000000A8 41807D002D             cmp byte[r13], '-'
-   324 000000AD 7560                   jne errClrSpec_
-   325 000000AF 41807D0163             cmp byte[r13 + 1], 'c'
-   326 000000B4 7559                   jne errClrSpec_
-   327 000000B6 41807D026C             cmp byte[r13 + 2], 'l'
-   328 000000BB 7552                   jne errClrSpec_
-   329 000000BD 41807D0300             cmp byte[r13 + 3], NULL
-   330 000000C2 754B                   jne errClrSpec_
+   323 000000AC 41807D002D             cmp byte[r13], '-'
+   324 000000B1 0F85F6000000           jne errClrSpec_
+   325 000000B7 41807D0163             cmp byte[r13 + 1], 'c'
+   326 000000BC 0F85EB000000           jne errClrSpec_
+   327 000000C2 41807D026C             cmp byte[r13 + 2], 'l'
+   328 000000C7 0F85E0000000           jne errClrSpec_
+   329 000000CD 41807D0300             cmp byte[r13 + 3], NULL
+   330 000000D2 0F85D5000000           jne errClrSpec_
    331                                 
    332                                 
-   333                                 
-   334                                 
-   335                                 
-   336                                 
-   337 000000C4 4D8B6E28               mov r13, qword[r14 + 40]
-   338                                 
-   339 000000C8 41807D002D             cmp byte[r13], '-'
-   340 000000CD 7549                   jne errSizSpec_
-   341 000000CF 41807D0173             cmp byte[r13 + 1], 's'
-   342 000000D4 7542                   jne errSizSpec_
-   343 000000D6 41807D027A             cmp byte[r13 + 2], 'z'
-   344 000000DB 753B                   jne errSizSpec_
-   345 000000DD 41807D0300             cmp byte[r13 + 3], NULL
-   346 000000E2 7534                   jne errSizSpec_
+   333 000000D8 48C7C000000000         mov rax, 0
+   334 000000DF 49C7C000000000         mov r8, 0
+   335 000000E6 4C8D4DE4               lea r9, byte[rbp - 28]
+   336 000000EA 4D8B6E20               mov r13, qword[r14 + 32]
+   337                                 
+   338                                 arg4Lp:
+   339 000000EE 43807C050000           cmp byte[r13 + r8], NULL
+   340 000000F4 740C                   je arg4Convert
+   341 000000F6 438A440500             mov al, byte[r13 + r8]
+   342 000000FB 43880401               mov byte[r9 + r8], al
+   343 000000FF 49FFC0                 inc r8
+   344 00000102 EBE8                   jmp arg4Lp
+   345                                 
+   346                                 arg4Convert:
    347                                 
-   348 000000E4 48C7C001000000         mov rax, TRUE
-   349 000000EB EB40                   jmp doneSuccess
-   350                                 
-   351                                 
-   352                                 errUsage_:
-   353 000000ED 48C7C7[00000000]       mov rdi, errUsage
-   354 000000F4 EB2B                   jmp doneError
+   348 00000104 41803932               cmp byte[r9], "2"
+   349 00000108 7505                   jne next2
+   350 0000010A 48C7C000000000         mov rax, FALSE
+   351                                 next2:
+   352                                 
+   353                                 
+   354                                 
    355                                 
-   356                                 errBadCL_:
-   357 000000F6 48C7C7[00000000]       mov rdi, errBadCL
-   358 000000FD EB22                   jmp doneError
-   359                                 
-   360                                 errSpdSpec_:
-   361 000000FF 48C7C7[00000000]       mov rdi, errSpdSpec
-   362 00000106 EB19                   jmp doneError
-   363                                 
-   364                                 errSpdValue_:
-   365 00000108 48C7C7[00000000]       mov rdi, errSpdValue
-   366 0000010F EB10                   jmp doneError
-   367                                 
-   368                                 errClrSpec_:
-   369 00000111 48C7C7[00000000]       mov rdi, errClrSpec
-   370 00000118 EB07                   jmp doneError
-   371                                 
-   372                                 errClrValue_:
+   356                                 
+   357                                 
+   358 00000111 4883F800               cmp rax, FALSE
+   359 00000115 0F849B000000           je errClrValue_
+   360                                 
+   361                                 
+   362                                 
+   363 0000011B 4D8B6E28               mov r13, qword[r14 + 40]
+   364                                 
+   365 0000011F 41807D002D             cmp byte[r13], '-'
+   366 00000124 0F8595000000           jne errSizSpec_
+   367 0000012A 41807D0173             cmp byte[r13 + 1], 's'
+   368 0000012F 0F858A000000           jne errSizSpec_
+   369 00000135 41807D027A             cmp byte[r13 + 2], 'z'
+   370 0000013A 0F857F000000           jne errSizSpec_
+   371 00000140 41807D0300             cmp byte[r13 + 3], NULL
+   372 00000145 757C                   jne errSizSpec_
    373                                 
    374                                 
-   375                                 errSizSpec_:
-   376 0000011A 48C7C7[00000000]       mov rdi, errSizSpec
-   377 00000121 EBFE                   jmp doneError
-   378                                 
-   379                                 doneError:
-   380 00000123 E882000000             call printString
-   381 00000128 48C7C000000000         mov rax, FALSE
-   382                                 
-   383                                 doneSuccess:
-   384 0000012F 5E                     pop rsi
-   385 00000130 5F                     pop rdi
-   386 00000131 415E                   pop r14
-   387 00000133 415D                   pop r13
-   388 00000135 415C                   pop r12
-   389 00000137 4159                   pop r9
-   390 00000139 4158                   pop r8
-   391                                 
-   392 0000013B 4889EC                 mov rsp, rbp
-   393 0000013E 5D                     pop rbp
+   375 00000147 48C7C000000000         mov rax, 0
+   376 0000014E 49C7C000000000         mov r8, 0
+   377 00000155 4C8D4DD9               lea r9, byte[rbp - 39]
+   378 00000159 4D8B6E30               mov r13, qword[r14 + 48]
+   379                                 
+   380                                 arg6Lp:
+   381 0000015D 43807C050000           cmp byte[r13 + r8], NULL
+   382 00000163 740C                   je arg6Convert
+   383 00000165 438A440500             mov al, byte[r13 + r8]
+   384 0000016A 43880401               mov byte[r9 + r8], al
+   385 0000016E 49FFC0                 inc r8
+   386 00000171 EBE8                   jmp arg6Lp
+   387                                 
+   388                                 arg6Convert:
+   389                                 
+   390 00000173 41803932               cmp byte[r9], "2"
+   391 00000177 7505                   jne next3
+   392 00000179 48C7C000000000         mov rax, FALSE
+   393                                 next3:
    394                                 
-   395 0000013F C3                     ret
+   395                                 
    396                                 
    397                                 
    398                                 
    399                                 
-   400                                 
-   401                                 
+   400 00000180 4883F800               cmp rax, FALSE
+   401 00000184 7446                   je errSizValue_
    402                                 
-   403                                 
-   404                                 
+   403 00000186 48C7C001000000         mov rax, TRUE
+   404 0000018D EB52                   jmp doneSuccess
    405                                 
    406                                 
-   407                                 
-   408                                 
-   409                                 
+   407                                 errUsage_:
+   408 0000018F 48C7C7[00000000]       mov rdi, errUsage
+   409 00000196 EB3D                   jmp doneError
    410                                 
-   411                                 [common speed 1:4]
-   412                                 [common color 1:4]
-   413                                 [common size 1:4]
+   411                                 errBadCL_:
+   412 00000198 48C7C7[00000000]       mov rdi, errBadCL
+   413 0000019F EB34                   jmp doneError
    414                                 
-   415                                 [global drawWheels]
-   416                                 drawWheels:
-   417 00000140 55                      push rbp
+   415                                 errSpdSpec_:
+   416 000001A1 48C7C7[00000000]       mov rdi, errSpdSpec
+   417 000001A8 EB2B                   jmp doneError
    418                                 
-   419                                 
-   420                                 
-   421                                 
+   419                                 errSpdValue_:
+   420 000001AA 48C7C7[00000000]       mov rdi, errSpdValue
+   421 000001B1 EB22                   jmp doneError
    422                                 
-   423                                 
-   424                                 
-   425                                 
+   423                                 errClrSpec_:
+   424 000001B3 48C7C7[00000000]       mov rdi, errClrSpec
+   425 000001BA EB19                   jmp doneError
    426                                 
-   427                                 
-   428                                 
-   429                                 
+   427                                 errClrValue_:
+   428 000001BC 48C7C7[00000000]       mov rdi, errClrValue
+   429 000001C3 EB10                   jmp doneError
    430                                 
-   431 00000141 48C7C700400000          mov rdi, GL_COLOR_BUFFER_BIT
-   432 00000148 E8(F6FFFFFF)            call glClear
-   433                                 
+   431                                 errSizSpec_:
+   432 000001C5 48C7C7[00000000]       mov rdi, errSizSpec
+   433 000001CC EB07                   jmp doneError
    434                                 
-   435 0000014D 48C7C700000000          mov rdi, GL_POINTS
-   436 00000154 E8(F6FFFFFF)            call glBegin
-   437                                 
+   435                                 errSizValue_:
+   436 000001CE 48C7C7[00000000]       mov rdi, errSizValue
+   437 000001D5 EBFE                   jmp doneError
    438                                 
-   439                                 
-   440                                 
-   441                                 
+   439                                 doneError:
+   440 000001D7 E882000000             call printString
+   441 000001DC 48C7C000000000         mov rax, FALSE
    442                                 
-   443                                 
-   444                                 
-   445                                 
-   446                                 
-   447                                 
-   448                                 
-   449                                 
-   450                                 
+   443                                 doneSuccess:
+   444 000001E3 5E                     pop rsi
+   445 000001E4 5F                     pop rdi
+   446 000001E5 415E                   pop r14
+   447 000001E7 415D                   pop r13
+   448 000001E9 415C                   pop r12
+   449 000001EB 4159                   pop r9
+   450 000001ED 4158                   pop r8
    451                                 
-   452                                 
-   453                                 
+   452 000001EF 4889EC                 mov rsp, rbp
+   453 000001F2 5D                     pop rbp
    454                                 
-   455                                 
-   456 00000159 E8(F6FFFFFF)            call glEnd
-   457 0000015E E8(F6FFFFFF)            call glFlush
+   455 000001F3 C3                     ret
+   456                                 
+   457                                 
    458                                 
    459                                 
    460                                 
    461                                 
    462                                 
    463                                 
-   464 00000163 F20F100425[00000000]      movsd xmm0, qword [s]
-   465 0000016C F20F580425[00000000]      addsd xmm0, qword [sStep]
-   466 00000175 F20F110425[00000000]      movsd qword [s], xmm0
+   464                                 
+   465                                 
+   466                                 
    467                                 
-   468 0000017E F20F100425[00000000]      movsd xmm0, qword [s]
-   469 00000187 F20F100C25[00000000]      movsd xmm1, qword [fltOne]
-   470 00000190 660F2EC1                ucomisd xmm0, xmm1
-   471 00000194 7610                    jbe resetDone
-   472                                 
-   473 00000196 F20F100425[00000000]      movsd xmm0, qword [fltZero]
-   474 0000019F F20F110425[00000000]      movsd qword [sStep], xmm0
-   475                                 resetDone:
-   476                                 
-   477 000001A8 E8(F6FFFFFF)            call glutPostRedisplay
+   468                                 
+   469                                 
+   470                                 
+   471                                 [common speed 1:4]
+   472                                 [common color 1:4]
+   473                                 [common size 1:4]
+   474                                 
+   475                                 [global drawWheels]
+   476                                 drawWheels:
+   477 000001F4 55                      push rbp
    478                                 
    479                                 
    480                                 
-   481 000001AD 5D                      pop rbp
-   482 000001AE C3                      ret
+   481                                 
+   482                                 
    483                                 
    484                                 
    485                                 
@@ -488,46 +488,106 @@
    488                                 
    489                                 
    490                                 
-   491                                 
-   492                                 
+   491 000001F5 48C7C700400000          mov rdi, GL_COLOR_BUFFER_BIT
+   492 000001FC E8(F6FFFFFF)            call glClear
    493                                 
    494                                 
-   495                                 
-   496                                 [global printString]
-   497                                 printString:
-   498 000001AF 53                      push rbx
+   495 00000201 48C7C700000000          mov rdi, GL_POINTS
+   496 00000208 E8(F6FFFFFF)            call glBegin
+   497                                 
+   498                                 
    499                                 
    500                                 
    501                                 
    502                                 
-   503 000001B0 4889FB                  mov rbx, rdi
-   504 000001B3 48C7C200000000          mov rdx, 0
-   505                                 strCountLoop:
-   506 000001BA 803B00                  cmp byte [rbx], NULL
-   507 000001BD 7406                    je strCountDone
-   508 000001BF 48FFC3                  inc rbx
-   509 000001C2 48FFC2                  inc rdx
-   510 000001C5 EBF1                    jmp strCountLoop
-   511                                 strCountDone:
+   503                                 
+   504                                 
+   505                                 
+   506                                 
+   507                                 
+   508                                 
+   509                                 
+   510                                 
+   511                                 
    512                                 
-   513 000001C7 4883FA00                cmp rdx, 0
-   514 000001CB 7411                    je prtDone
+   513                                 
+   514                                 
    515                                 
-   516                                 
-   517                                 
+   516 0000020D E8(F6FFFFFF)            call glEnd
+   517 00000212 E8(F6FFFFFF)            call glFlush
    518                                 
-   519 000001CD 48C7C001000000          mov rax, SYS_write
-   520 000001D4 4889FE                  mov rsi, rdi
-   521 000001D7 48C7C701000000          mov rdi, STDOUT
+   519                                 
+   520                                 
+   521                                 
    522                                 
-   523 000001DE 0F05                    syscall
-   524                                 
-   525                                 
-   526                                 
+   523                                 
+   524 00000217 F20F100425[00000000]      movsd xmm0, qword [s]
+   525 00000220 F20F580425[00000000]      addsd xmm0, qword [sStep]
+   526 00000229 F20F110425[00000000]      movsd qword [s], xmm0
    527                                 
-   528                                 prtDone:
-   529 000001E0 5B                      pop rbx
-   530 000001E1 C3                      ret
-   531                                 
+   528 00000232 F20F100425[00000000]      movsd xmm0, qword [s]
+   529 0000023B F20F100C25[00000000]      movsd xmm1, qword [fltOne]
+   530 00000244 660F2EC1                ucomisd xmm0, xmm1
+   531 00000248 7610                    jbe resetDone
    532                                 
-   533                                 
+   533 0000024A F20F100425[00000000]      movsd xmm0, qword [fltZero]
+   534 00000253 F20F110425[00000000]      movsd qword [sStep], xmm0
+   535                                 resetDone:
+   536                                 
+   537 0000025C E8(F6FFFFFF)            call glutPostRedisplay
+   538                                 
+   539                                 
+   540                                 
+   541 00000261 5D                      pop rbp
+   542 00000262 C3                      ret
+   543                                 
+   544                                 
+   545                                 
+   546                                 
+   547                                 
+   548                                 
+   549                                 
+   550                                 
+   551                                 
+   552                                 
+   553                                 
+   554                                 
+   555                                 
+   556                                 [global printString]
+   557                                 printString:
+   558 00000263 53                      push rbx
+   559                                 
+   560                                 
+   561                                 
+   562                                 
+   563 00000264 4889FB                  mov rbx, rdi
+   564 00000267 48C7C200000000          mov rdx, 0
+   565                                 strCountLoop:
+   566 0000026E 803B00                  cmp byte [rbx], NULL
+   567 00000271 7406                    je strCountDone
+   568 00000273 48FFC3                  inc rbx
+   569 00000276 48FFC2                  inc rdx
+   570 00000279 EBF1                    jmp strCountLoop
+   571                                 strCountDone:
+   572                                 
+   573 0000027B 4883FA00                cmp rdx, 0
+   574 0000027F 7411                    je prtDone
+   575                                 
+   576                                 
+   577                                 
+   578                                 
+   579 00000281 48C7C001000000          mov rax, SYS_write
+   580 00000288 4889FE                  mov rsi, rdi
+   581 0000028B 48C7C701000000          mov rdi, STDOUT
+   582                                 
+   583 00000292 0F05                    syscall
+   584                                 
+   585                                 
+   586                                 
+   587                                 
+   588                                 prtDone:
+   589 00000294 5B                      pop rbx
+   590 00000295 C3                      ret
+   591                                 
+   592                                 
+   593                                 

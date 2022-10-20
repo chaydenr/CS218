@@ -344,10 +344,15 @@ mov rdi, errClrSpec
 jmp doneError
 
 errClrValue_:
-; mov rdi
+mov rdi, errClrValue
+jmp doneError
 
 errSizSpec_:
 mov rdi, errSizSpec
+jmp doneError
+
+errSizValue_:
+mov rdi, errSizValue
 jmp doneError
 
 doneError:
