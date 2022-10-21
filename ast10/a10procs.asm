@@ -433,7 +433,7 @@ movsd qword[sStep], xmm0
 	; glBegin();
 	mov	rdi, GL_POINTS
 	call	glBegin
-
+ 
 ; -----
 ;  Set draw color(r,g,b)
 ;	uses glColor3ub(r,g,b)
