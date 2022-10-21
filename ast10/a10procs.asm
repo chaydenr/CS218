@@ -445,7 +445,7 @@ shr r9, 8
 movzx rsi, byte[r9]
 shr r9, 8
 movzx rdi, byte[r9]
-
+ 
 
 ; -----
 ;  main plot loop
