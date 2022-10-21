@@ -464,6 +464,38 @@ call glColor3ub
 
 
 
+; for (t = 0; t <= 2pi; t += tStep) {
+mainPlotLp:
+; calculate 2pi
+movsd xmm0, qword[pi]
+mulsd xmm0, qword[fltTwo]
+
+; t <= 2pi
+cmp qword[t], xmm0
+jg mainPlotEnd
+
+xy1:
+; find x1 = cos(t)
+movsd xmm0, qword[t]
+call cos
+cvtsd2si edi, xmm0
+
+; find y1 = sin(t)
+movsd xmm0, qword[t]
+call sin
+cvtsd2si esi, xmm0
+
+; plot points
+call glVertex2d
+
+; t += tStep
+movsd xmm0, qword[t]
+addsd xmm0, qword[tStep]
+movsd qword[t], xmm0
+jmp mainPlotLp
+; }
+
+mainPlotEnd:
 
 ; -----
 ;  Display image
