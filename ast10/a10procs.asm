@@ -421,6 +421,7 @@ drawWheels:
 ;	sStep = speed / scale
 
 cvtsi2sd xmm0, dword[speed]
+; movss dword[s], xmm0
 divsd xmm0, qword[scale]
 movsd qword[sStep], xmm0
 
