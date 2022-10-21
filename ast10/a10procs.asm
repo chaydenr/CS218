@@ -439,7 +439,13 @@ movsd qword[sStep], xmm0
 ;  Set draw color(r,g,b)
 ;	uses glColor3ub(r,g,b)
 
-;	YOUR CODE GOES HERE
+mov r9, qword[color]
+movzx rdx, byte[r9]
+shr r9, 8
+movzx rsi, byte[r9]
+shr r9, 8
+movzx rdi, byte[r9]
+
 
 ; -----
 ;  main plot loop
