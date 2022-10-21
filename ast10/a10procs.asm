@@ -242,6 +242,9 @@ jl errSpdValue_
 cmp rax, SPD_MAX
 jg errSpdValue_
 
+; if good, save speed value
+mov qword[speed], rax
+
 ; check errClrSpec
 mov r13, qword[r14 + 24]
 ; check argv[3] for -cl
@@ -288,6 +291,9 @@ jl errClrValue_
 
 cmp rax, CLR_MAX
 jg errClrValue_
+
+; if successful, store color
+mov qword[color], rax
 
 ; check 
 ; check errSizSpec
@@ -339,6 +345,9 @@ jg errSizValue_
 
 mov rax, TRUE
 jmp doneSuccess
+
+; if good, save size
+mov qword[size], rax
 
 ; !!!!!! ERROR SECTION !!!!!!!!
 errUsage_:
@@ -439,13 +448,14 @@ movsd qword[sStep], xmm0
 ;  Set draw color(r,g,b)
 ;	uses glColor3ub(r,g,b)
 
-mov r9, qword[color]
-movzx rdx, byte[r9]
+mov r9d, dword[color]
+movzx rdx, r9b
 shr r9, 8
-movzx rsi, byte[r9]
+movzx rsi, r9b
 shr r9, 8
-movzx rdi, byte[r9]
+movzx rdi, r9b
  
+call glColor3ub
 
 ; -----
 ;  main plot loop
@@ -453,7 +463,6 @@ movzx rdi, byte[r9]
 ;	uses glVertex2d(x,y) for each formula
 
 
-;	YOUR CODE GOES HERE
 
 
 ; -----
@@ -577,7 +586,8 @@ jl convFail
 cmp r11b, 7
 jg convFail
 mul rdx
-add al, r11b
+add rax, r11
+; add al, r11b
 inc r14
 inc r10
 jmp checkLength
