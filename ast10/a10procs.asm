@@ -420,7 +420,9 @@ drawWheels:
 ;  Set draw speed step
 ;	sStep = speed / scale
 
-;	YOUR CODE GOES HERE
+cvtsi2sd xmm0, dword[speed]
+divsd xmm0, qword[scale]
+movsd qword[sStep], xmm0
 
 ; -----
 ;  Prepare for drawing
