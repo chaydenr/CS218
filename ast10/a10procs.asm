@@ -600,8 +600,10 @@ movsd qword[fltTmp2], xmm1
 ;num / den
 divsd xmm0, qword[fltTmp2]
 
-; num1 + num2, save to x
-addsd xmm0, qword[fltTmp1]
+; num1 - num2, save to y
+movsd xmm1, xmm0
+movsd xmm0, qword[fltTmp1]
+subsd xmm0, xmm1
 movsd qword[y], xmm0
 
 ; plot xy3
