@@ -48,7 +48,7 @@ stat = getParams(argc, argv, &speed, &color, &size);
 height = size;
 width = size;
 // Debug call for display function
-drawWheels();
+//drawWheels();
 if (stat) {
 glutInit(&argc, argv);
 glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
