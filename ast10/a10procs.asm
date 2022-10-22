@@ -497,7 +497,14 @@ movsd xmm0, qword[x]
 movsd xmm1, qword[y]
 call glVertex2d
 
+; t += tStep
+movsd xmm0, qword[t]
+addsd xmm0, qword[tStep]
+movsd qword[t], xmm0
+jmp mainPlotLp
+; }
 
+mainPlotEnd:
 
 ; -----
 ;  Display image
@@ -526,15 +533,6 @@ resetDone:
 	call	glutPostRedisplay
 
 ; -----
-
-; t += tStep
-movsd xmm0, qword[t]
-addsd xmm0, qword[tStep]
-movsd qword[t], xmm0
-jmp mainPlotLp
-; }
-
-mainPlotEnd:
 
 	pop	rbp
 	ret
