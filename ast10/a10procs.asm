@@ -495,17 +495,55 @@ call glVertex2d
 
 
 xy2:
-; movsd xmm0, qword[t]
-; call cos
-; divsd xmm0, qword[fltThree]		; xmm0 = cos(t) / 3
+; find x
+movsd xmm0, qword[t]
+call cos
+divsd xmm0, qword[fltThree]		; fltTmp1 = cos(t) / 3
+movsd qword[fltTmp1], xmm0
 
+; 2piS
+movsd xmm0, qword[pi]
+mulsd xmm0, qword[fltTwo]
+mulsd xmm0, qword[s]
+; save to 2piS for later
+movsd qword[fltTwoPiS], xmm0
+; cos(2piS)
+call cos
+; 2 * cos(2piS)
+mulsd xmm0, qword[fltTwo]
+; /3 
+divsd xmm0, qword[fltThree]
 
+; add together then save to x
+addsd xmm0, qword[fltTmp1]
+movsd qword[x], xmm0
 
-; ; sin(t)
-; movsd xmm0, qword[t]
-; call sin
-; movsd qword[y], xmm0
+; find y
+movsd xmm0, qword[t]
+call sin
+divsd xmm0, qword[fltThree]		; fltTmp1 = cos(t) / 3
+movsd qword[fltTmp1], xmm0
 
+; 2piS
+movsd xmm0, qword[pi]
+mulsd xmm0, qword[fltTwo]
+mulsd xmm0, qword[s]
+; save to 2piS for later
+movsd qword[fltTwoPiS], xmm0
+; sin(2piS)
+call sin
+; 2 * sin(2piS)
+mulsd xmm0, qword[fltTwo]
+; /3 
+divsd xmm0, qword[fltThree]
+
+; add together then save to y
+addsd xmm0, qword[fltTmp1]
+movsd qword[y], xmm0
+
+; plot x2 and y2
+movsd xmm0, qword[x]
+movsd xmm1, qword[y]
 
 ; t += tStep
 movsd xmm0, qword[t]
