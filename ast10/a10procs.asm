@@ -677,8 +677,10 @@ mulsd xmm1, qword[fltSix]
 ; num/den
 divsd xmm0, xmm1
 
-; add together, save to y
-addsd xmm0, qword[fltTmp1]
+; num1 - num2, save to y
+movsd xmm1, xmm0
+movsd xmm0, qword[fltTmp1]
+subsd xmm0, xmm1
 movsd qword[y], xmm0
 
 ; plot xy4
