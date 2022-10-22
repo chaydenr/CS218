@@ -462,7 +462,8 @@ call glColor3ub
 ;	iterate t from 0.0 to 2*pi by tStep
 ;	uses glVertex2d(x,y) for each formula
 
-
+movsd xmm0, qword[fltZero]
+movsd qword[t], xmm0
 
 ; for (t = 0; t <= 2pi; t += tStep) {
 ; calculate 2pi
