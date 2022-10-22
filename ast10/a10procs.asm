@@ -184,9 +184,12 @@ push	r12
 push	r13
 push	r15
 
-mov		r12, rdi	; holds argc value
-mov		r9, 0		; setup to hold argv value
-mov		r15, rsi	; holds argv[] address
+; r12 holds argc value
+mov		r12, rdi
+; r9 setup to hold argv value
+mov		r9, 0
+; r15 holds argv[] address
+mov		r15, rsi
 
 push 	rdi
 push	rsi
@@ -213,27 +216,28 @@ jne		errSpdSpec_
 ; check errSpdValue
 mov		rax, 0
 mov		r10, 0
-lea		r13, byte[rbp - 17]
-mov		r9, qword[r15 + 16]
+lea		r13, byte[rbp - 17] ; grab address
+mov		r9, qword[r15 + 16] ; grab value
 
 arg2Lp:
-cmp		byte[r9 + r10], NULL
-je		arg2Convert
-mov		al, byte[r9 + r10]
+cmp		byte[r9 + r10], NULL ; check if null
+je		arg2Convert			; if null, end of string. convert
+mov		al, byte[r9 + r10]  ; else, save character
 mov		byte[r13 + r10], al
 inc		r10
 jmp		arg2Lp
 
 arg2Convert:
-mov		byte[r13 + r10], NULL
-mov		rdi, r13
+mov		byte[r13 + r10], NULL ; add null to end of string
+mov		rdi, r13			; setup conversion function
 mov		rsi, rdx
-
 call	aSept2int
 
+; check if string converted properly
 cmp		rax, FALSE
-je		errSpdSpec_
+je		errSpdValue_
 
+; check to see if value in range
 cmp		rax, SPD_MIN
 jl		errSpdValue_
 
@@ -242,6 +246,8 @@ jg		errSpdValue_
 
 ; if good, save speed value
 mov		qword[speed], rax
+
+
 
 ; check errClrSpec
 mov		r9, qword[r15 + 24]
@@ -258,8 +264,8 @@ jne		errClrSpec_
 ; check errClrValue
 mov		rax, 0
 mov		r10, 0
-lea		r13, byte[rbp - 28]
-mov		r9, qword[r15 + 32]
+lea		r13, byte[rbp - 28] ; grab address
+mov		r9, qword[r15 + 32] ; grab value
 
 arg4Lp:
 cmp		byte[r9 + r10], NULL
@@ -273,12 +279,13 @@ arg4Convert:
 mov		byte[r13 + r10], NULL
 mov		rdi, r13
 mov		rsi, rdx
-
 call	aSept2int
 
+;check if number converted properly
 cmp		rax, FALSE
-je		errClrSpec_
+je		errClrValue_
 
+; check if value is in range
 cmp		rax, CLR_MIN
 jl		errClrValue_
 
@@ -287,6 +294,9 @@ jg		errClrValue_
 
 ; if successful, store color
 mov		qword[color], rax
+
+
+
 
 ; check errSizSpec
 mov		r9, qword[r15 + 40]
@@ -318,12 +328,13 @@ arg6Convert:
 mov		byte[r13 + r10], NULL
 mov 	rdi, r13
 mov 	rsi, rdx
-
 call 	aSept2int
 
+; check if value converted properly
 cmp 	rax, FALSE
-je		errSizSpec_
+je		errSizValue_
 
+;check if value in range
 cmp 	rax, SIZ_MIN
 jl 		errSizValue_
 
@@ -387,219 +398,6 @@ pop 	rbp
 ret
 
 
-; global getParams
-; getParams:
-; push	rbp
-; mov		rbp, rsp
-; sub		rsp, 39
-
-; push	r8
-; push	r9
-; push	r12
-; push	r13
-; push	r14
-
-; mov		r12, rdi	; holds argc value
-; mov		r13, 0		; setup to hold argv value
-; mov		r14, rsi	; holds argv[] address
-
-; push 	rdi
-; push	rsi
-
-; ; check errUsage
-; cmp		r12, 1				; check if argc = 1
-; je		errUsage_			; jump to errUsage
-
-; ; check errBadCL
-; cmp		r12, 7
-; jne		errBadCL_
-
-; ; check errSpdSpec: argv[1] contains "-sp"
-; mov		r13, qword[r14 + 8]
-; cmp		byte[r13], '-'
-; jne		errSpdSpec_
-; cmp		byte[r13 + 1], 's'
-; jne		errSpdSpec_
-; cmp		byte[r13 + 2], 'p'
-; jne		errSpdSpec_
-; cmp		byte[r13 + 3], NULL
-; jne		errSpdSpec_
-
-; ; check errSpdValue
-; mov		rax, 0
-; mov		r8, 0
-; lea		r9, byte[rbp - 17]
-; mov		r13, qword[r14 + 16]
-
-; arg2Lp:
-; cmp		byte[r13 + r8], NULL
-; je		arg2Convert
-; mov		al, byte[r13 + r8]
-; mov		byte[r9 + r8], al
-; inc		r8
-; jmp		arg2Lp
-
-; arg2Convert:
-; mov		byte[r9 + r8], NULL
-; mov		rdi, r9
-; mov		rsi, rdx
-
-; call	aSept2int
-
-; cmp		rax, FALSE
-; je		errSpdSpec_
-
-; cmp		rax, SPD_MIN
-; jl		errSpdValue_
-
-; cmp		rax, SPD_MAX
-; jg		errSpdValue_
-
-; ; if good, save speed value
-; mov		qword[speed], rax
-
-; ; check errClrSpec
-; mov		r13, qword[r14 + 24]
-; ; check argv[3] for -cl
-; cmp		byte[r13], '-'
-; jne		errClrSpec_
-; cmp		byte[r13 + 1], 'c'
-; jne		errClrSpec_
-; cmp		byte[r13 + 2], 'l'
-; jne		errClrSpec_
-; cmp		byte[r13 + 3], NULL
-; jne		errClrSpec_
-
-; ; check errClrValue
-; mov		rax, 0
-; mov		r8, 0
-; lea		r9, byte[rbp - 28]
-; mov		r13, qword[r14 + 32]
-
-; arg4Lp:
-; cmp		byte[r13 + r8], NULL
-; je		arg4Convert
-; mov		al, byte[r13 + r8]
-; mov		byte[r9 + r8], al
-; inc		r8
-; jmp		arg4Lp
-
-; arg4Convert:
-; mov		byte[r9 + r8], NULL
-; mov		rdi, r9
-; mov		rsi, rdx
-
-; call	aSept2int
-
-; cmp		rax, FALSE
-; je		errClrSpec_
-
-; cmp		rax, CLR_MIN
-; jl		errClrValue_
-
-; cmp		rax, CLR_MAX
-; jg		errClrValue_
-
-; ; if successful, store color
-; mov		qword[color], rax
-
-; ; check errSizSpec
-; mov		r13, qword[r14 + 40]
-; ; check argv[3] for "-sz"
-; cmp		byte[r13], '-'
-; jne		errSizSpec_
-; cmp		byte[r13 + 1], 's'
-; jne		errSizSpec_
-; cmp		byte[r13 + 2], 'z'
-; jne		errSizSpec_
-; cmp 	byte[r13 + 3], NULL
-; jne 	errSizSpec_
-
-; ;check errSizValue
-; mov 	rax, 0
-; mov 	r8, 0
-; lea 	r9, byte[rbp - 39]
-; mov 	r13, qword[r14 + 48]
-
-; arg6Lp:
-; cmp 	byte[r13 + r8], NULL
-; je 		arg6Convert
-; mov 	al, byte[r13 + r8]
-; mov 	byte[r9 + r8], al
-; inc 	r8
-; jmp 	arg6Lp
-
-; arg6Convert:
-; mov		byte[r9 + r8], NULL
-; mov 	rdi, r9
-; mov 	rsi, rdx
-
-; call 	aSept2int
-
-; cmp 	rax, FALSE
-; je		errSizSpec_
-
-; cmp 	rax, SIZ_MIN
-; jl 		errSizValue_
-
-; cmp 	rax, SIZ_MAX
-; jg 		errSizValue_
-
-; mov 	rax, TRUE
-; jmp 	doneSuccess
-
-; ; if good, save size
-; mov 	qword[size], rax
-
-; ; !!!!!! ERROR SECTION !!!!!!!!
-; errUsage_:
-; mov 	rdi, errUsage
-; jmp 	doneError
-
-; errBadCL_:
-; mov 	rdi, errBadCL
-; jmp 	doneError
-
-; errSpdSpec_:
-; mov 	rdi, errSpdSpec
-; jmp 	doneError
-
-; errSpdValue_:
-; mov 	rdi, errSpdValue
-; jmp 	doneError
-
-; errClrSpec_:
-; mov 	rdi, errClrSpec
-; jmp 	doneError
-
-; errClrValue_:
-; mov 	rdi, errClrValue
-; jmp 	doneError
-
-; errSizSpec_:
-; mov 	rdi, errSizSpec
-; jmp 	doneError
-
-; errSizValue_:
-; mov 	rdi, errSizValue
-; jmp 	doneError
-
-; doneError:
-; call	printString
-; mov 	rax, FALSE
-
-; doneSuccess:
-; pop 	rsi
-; pop 	rdi
-; pop 	r14
-; pop 	r13
-; pop 	r12
-; pop 	r9
-; pop 	r8
-; mov 	rsp, rbp
-; pop 	rbp
-
-; ret
 
 
 
@@ -1060,7 +858,6 @@ prtDone:
 
 global aSept2int
 aSept2int:
-
 push 	rbx
 push 	rcx
 push 	rdx
@@ -1075,111 +872,48 @@ mov 	rax, 0
 jmp 	checkLength
 
 spaces:
-cmp 	rax, 0
-jne 	convFail
-inc 	r10
+	cmp 	rax, 0		; ignore beginning whitespace
+	jne 	convFail	; no whitespace, empty string
+	inc 	r10
 
 checkLength:
-mov 	r9, 0
-cmp 	r14, 50
-je 		convFail
+	mov 	r9, 0
+	cmp 	r14, 50		; checks if string in range <50 chars
+	je 		convFail	; if over, fail string
 
-mov 	r9b, byte[rdi + r10]
-mov 	rdx, 7
-cmp 	r9b, NULL
-je 		convEnd
+	mov 	r9b, byte[rdi + r10]	; grab current char
+	mov 	rdx, 7		; base 7 multiplication
+	cmp 	r9b, NULL	; check if null, 
+	je 		convEnd		; if null, end of string
 
 conv2Int:
-cmp 	r9b, ' '
-je 		spaces
-sub 	r9b, '0'
-cmp 	r9b, 0
-jl 		convFail
-cmp 	r9b, 7
-jg 		convFail
-mul 	rdx
-add 	rax, r9
-inc 	r14
-inc 	r10
-jmp 	checkLength
+	cmp 	r9b, ' '	
+	je 		spaces
+	sub 	r9b, '0'	; subtract 0 to get actual value of char
+	cmp 	r9b, 0		; < 0, fail string, bad character
+	jl 		convFail
+	cmp 	r9b, 7		; > 7 fail string, over range. not base 7
+	jg 		convFail
+	mul 	rdx			; multiply current sum
+	add 	rax, r9		; add value to sum
+	inc 	r14			; setup next loop
+	inc 	r10
+	jmp 	checkLength
 
 convSuccess:
-mov 	dword[rsi], eax
-mov 	rax, TRUE
-jmp 	convEnd
+	mov 	dword[rsi], eax	; return value of septnum
+	mov 	rax, TRUE		; true flag
+	jmp 	convEnd
 
 convFail:
-mov 	rax, FALSE
+	mov 	rax, FALSE		; fail flag, string failed
 
 convEnd:
-pop 	r14
-pop 	r13
-pop 	r12
-pop 	rdx
-pop 	rcx
-pop 	rbx
+	pop 	r14
+	pop 	r13
+	pop 	r12
+	pop 	rdx
+	pop 	rcx
+	pop 	rbx
 
 ret
-
-; global aSept2int
-; aSept2int:
-
-; push 	rbx
-; push 	rcx
-; push 	rdx
-; push 	r12
-; push 	r13
-; push 	r14
-
-; mov 	r10, 0
-; mov 	r14, 0
-; mov 	rax, 0
-
-; jmp 	checkLength
-
-; spaces:
-; cmp 	rax, 0
-; jne 	convFail
-; inc 	r10
-
-; checkLength:
-; mov 	r11, 0
-; cmp 	r14, 50
-; je 		convFail
-
-; mov 	r11b, byte[rdi + r10]
-; mov 	rdx, 7
-; cmp 	r11b, NULL
-; je 		convEnd
-
-; conv2Int:
-; cmp 	r11b, ' '
-; je 		spaces
-; sub 	r11b, '0'
-; cmp 	r11b, 0
-; jl 		convFail
-; cmp 	r11b, 7
-; jg 		convFail
-; mul 	rdx
-; add 	rax, r11
-; inc 	r14
-; inc 	r10
-; jmp 	checkLength
-
-; convSuccess:
-; mov 	dword[rsi], eax
-; mov 	rax, TRUE
-; jmp 	convEnd
-
-; convFail:
-; mov 	rax, FALSE
-
-; convEnd:
-; pop 	r14
-; pop 	r13
-; pop 	r12
-; pop 	rdx
-; pop 	rcx
-; pop 	rbx
-
-; ret
