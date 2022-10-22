@@ -544,6 +544,7 @@ movsd qword[y], xmm0
 ; plot x2 and y2
 movsd xmm0, qword[x]
 movsd xmm1, qword[y]
+call glVertex2d
 
 ; t += tStep
 movsd xmm0, qword[t]
