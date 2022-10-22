@@ -469,16 +469,13 @@ movsd qword[t], xmm0
 ; calculate 2pi
 movsd xmm0, qword[pi]
 mulsd xmm0, qword[fltTwo]
-movsd qword[fltTmp1], xmm0	
+movsd qword[fltTwoPiS], xmm0	
 
 mainPlotLp:
 ; t <= 2pi
 movsd xmm0, qword[t]
-ucomisd xmm0, qword[fltTmp1]
+ucomisd xmm0, qword[fltTwoPiS]
 ja mainPlotEnd
-
-; ucomisd xmm0, qword[t]
-; jl mainPlotEnd
 
 xy1:
 ; find x1 = cos(t)
@@ -497,6 +494,12 @@ movsd qword[y], xmm0
 movsd xmm0, qword[x]
 movsd xmm1, qword[y]
 call glVertex2d
+
+
+xy2:
+
+
+
 
 ; t += tStep
 movsd xmm0, qword[t]
