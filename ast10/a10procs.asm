@@ -546,6 +546,73 @@ movsd xmm0, qword[x]
 movsd xmm1, qword[y]
 call glVertex2d
 
+
+xy3:
+; X calc first number, save to fltTmp1
+; 2piS
+movsd xmm0, qword[fltTwoPiS]
+; cos(2piS)
+call cos
+; 2 * cos(2piS)
+mulsd xmm0, qword[fltTwo]
+; /3 
+divsd xmm0, qword[fltThree]
+movsd qword[fltTmp1], xmm0
+
+;calc second number, save to xmm0
+; numerator - tcos(4piS)
+movsd xmm0, qword[fltTwoPiS]
+mulsd xmm0, qword[fltTwo]
+call cos
+mulsd xmm0, qword[t]
+; denominator - 6pi
+movsd xmm1, qword[pi]
+mulsd xmm1, qword[fltSix]
+movsd qword[fltTmp2], xmm1
+;num / den
+divsd xmm0, qword[fltTmp2]
+
+; num1 + num2, save to x
+addsd xmm0, qword[fltTmp1]
+movsd qword[x], xmm0
+
+; Y calc first number, save to fltTmp1
+; 2piS
+movsd xmm0, qword[fltTwoPiS]
+; sin(2piS)
+call sin
+; 2 * sin(2piS)
+mulsd xmm0, qword[fltTwo]
+; /3 
+divsd xmm0, qword[fltThree]
+movsd qword[fltTmp1], xmm0
+
+;calc second number, save to xmm0
+; numerator - tsin(4piS)
+movsd xmm0, qword[fltTwoPiS]
+mulsd xmm0, qword[fltTwo]
+call sin
+mulsd xmm0, qword[t]
+; denominator - 6pi
+movsd xmm1, qword[pi]
+mulsd xmm1, qword[fltSix]
+movsd qword[fltTmp2], xmm1
+;num / den
+divsd xmm0, qword[fltTmp2]
+
+; num1 + num2, save to x
+addsd xmm0, qword[fltTmp1]
+movsd qword[y], xmm0
+
+; plot xy3
+movsd xmm0, qword[x]
+movsd xmm1, qword[y]
+call glVertex2d
+
+
+
+
+
 ; t += tStep
 movsd xmm0, qword[t]
 addsd xmm0, qword[tStep]
