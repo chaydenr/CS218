@@ -465,17 +465,15 @@ call glColor3ub
 movsd xmm0, qword[fltZero]
 movsd qword[t], xmm0
 
-; for (t = 0; t <= 2pi; t += tStep) {
+; for (t = 0; t <= 2pi; t += tStep) {}
+mainPlotLp:
 ; calculate 2pi
 movsd xmm0, qword[pi]
 mulsd xmm0, qword[fltTwo]
-movsd qword[fltTwoPiS], xmm0	
 
-mainPlotLp:
 ; t <= 2pi
-movsd xmm0, qword[t]
-ucomisd xmm0, qword[fltTwoPiS]
-ja mainPlotEnd
+ucomisd xmm0, qword[t]
+jb mainPlotEnd
 
 xy1:
 ; find x1 = cos(t)
@@ -497,8 +495,16 @@ call glVertex2d
 
 
 xy2:
+; movsd xmm0, qword[t]
+; call cos
+; divsd xmm0, qword[fltThree]		; xmm0 = cos(t) / 3
 
 
+
+; ; sin(t)
+; movsd xmm0, qword[t]
+; call sin
+; movsd qword[y], xmm0
 
 
 ; t += tStep
