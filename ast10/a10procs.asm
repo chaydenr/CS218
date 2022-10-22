@@ -4,6 +4,10 @@
 ;  Section: 1002
 ;  Assignment: 10
 ;  Description:  This program will use an external library OpenGL
+;  and will plot points to create a moving image. The user will type in
+;  commands on the command line to specify color, speed, and image size. 
+;  This is all done through various calculations using floating point 
+;  registers and multiple function calls. 
 
 
 ; -----
@@ -167,238 +171,435 @@ extern	cos, sin
 ;	speed, color, and size via reference (of all valid)
 ;	TRUE or FALSE
 
+
 global getParams
 getParams:
-push rbp
-mov rbp, rsp
-sub rsp, 39
+push	rbp
+mov		rbp, rsp
+sub		rsp, 39
 
-push r8
-push r9
-push r12
-push r13
-push r14
+push	r9
+push	r10
+push	r12
+push	r13
+push	r15
 
-mov r12, rdi	; holds argc value
-mov r13, 0		; setup to hold argv value
-mov r14, rsi	; holds argv[] address
+mov		r12, rdi	; holds argc value
+mov		r9, 0		; setup to hold argv value
+mov		r15, rsi	; holds argv[] address
 
-push rdi
-push rsi
+push 	rdi
+push	rsi
 
 ; check errUsage
-cmp r12, 1				; check if argc = 1
-je errUsage_			; jump to errUsage
+cmp		r12, 1				; check if argc = 1
+je		errUsage_			; jump to errUsage
 
 ; check errBadCL
-cmp r12, 7
-jne errBadCL_
+cmp		r12, 7
+jne		errBadCL_
 
-
-; check errSpdSpec
-mov r13, qword[r14 + 8]
-; check argv[1] for "-sp"
-cmp byte[r13], '-'
-jne errSpdSpec_
-cmp byte[r13 + 1], 's'
-jne errSpdSpec_
-cmp byte[r13 + 2], 'p'
-jne errSpdSpec_
-cmp byte[r13 + 3], NULL
-jne errSpdSpec_
+; check errSpdSpec: argv[1] contains "-sp"
+mov		r9, qword[r15 + 8]
+cmp		byte[r9], '-'
+jne		errSpdSpec_
+cmp		byte[r9 + 1], 's'
+jne		errSpdSpec_
+cmp		byte[r9 + 2], 'p'
+jne		errSpdSpec_
+cmp		byte[r9 + 3], NULL
+jne		errSpdSpec_
 
 ; check errSpdValue
-mov rax, 0
-mov r8, 0
-lea r9, byte[rbp - 17]
-mov r13, qword[r14 + 16]
+mov		rax, 0
+mov		r10, 0
+lea		r13, byte[rbp - 17]
+mov		r9, qword[r15 + 16]
 
 arg2Lp:
-cmp byte[r13 + r8], NULL
-je arg2Convert
-mov al, byte[r13 + r8]
-mov byte[r9 + r8], al
-inc r8
-jmp arg2Lp
+cmp		byte[r9 + r10], NULL
+je		arg2Convert
+mov		al, byte[r9 + r10]
+mov		byte[r13 + r10], al
+inc		r10
+jmp		arg2Lp
 
 arg2Convert:
-; !!! FOR TESTING ONLY !!!
-; cmp byte[r9], "2"
-; jne next1
-; mov rax, FALSE
-; next1:
-mov byte[r9 + r8], NULL
-mov rdi, r9
-mov rsi, rdx
+mov		byte[r13 + r10], NULL
+mov		rdi, r13
+mov		rsi, rdx
 
-call aSept2int
+call	aSept2int
 
-cmp rax, FALSE
-je errSpdSpec_
+cmp		rax, FALSE
+je		errSpdSpec_
 
-cmp rax, SPD_MIN
-jl errSpdValue_
+cmp		rax, SPD_MIN
+jl		errSpdValue_
 
-cmp rax, SPD_MAX
-jg errSpdValue_
+cmp		rax, SPD_MAX
+jg		errSpdValue_
 
 ; if good, save speed value
-mov qword[speed], rax
+mov		qword[speed], rax
 
 ; check errClrSpec
-mov r13, qword[r14 + 24]
+mov		r9, qword[r15 + 24]
 ; check argv[3] for -cl
-cmp byte[r13], '-'
-jne errClrSpec_
-cmp byte[r13 + 1], 'c'
-jne errClrSpec_
-cmp byte[r13 + 2], 'l'
-jne errClrSpec_
-cmp byte[r13 + 3], NULL
-jne errClrSpec_
+cmp		byte[r9], '-'
+jne		errClrSpec_
+cmp		byte[r9 + 1], 'c'
+jne		errClrSpec_
+cmp		byte[r9 + 2], 'l'
+jne		errClrSpec_
+cmp		byte[r9 + 3], NULL
+jne		errClrSpec_
 
 ; check errClrValue
-mov rax, 0
-mov r8, 0
-lea r9, byte[rbp - 28]
-mov r13, qword[r14 + 32]
+mov		rax, 0
+mov		r10, 0
+lea		r13, byte[rbp - 28]
+mov		r9, qword[r15 + 32]
 
 arg4Lp:
-cmp byte[r13 + r8], NULL
-je arg4Convert
-mov al, byte[r13 + r8]
-mov byte[r9 + r8], al
-inc r8
-jmp arg4Lp
+cmp		byte[r9 + r10], NULL
+je		arg4Convert
+mov		al, byte[r9 + r10]
+mov		byte[r13 + r10], al
+inc		r10
+jmp		arg4Lp
 
 arg4Convert:
-; !!! FOR TESTING ONLY !!!
-; cmp byte[r9], "2"
-; jne next2
-; mov rax, FALSE
-; next2:
-mov byte[r9 + r8], NULL
-mov rdi, r9
-mov rsi, rdx
+mov		byte[r13 + r10], NULL
+mov		rdi, r13
+mov		rsi, rdx
 
-call aSept2int
+call	aSept2int
 
-cmp rax, FALSE
-je errClrSpec_
+cmp		rax, FALSE
+je		errClrSpec_
 
-cmp rax, CLR_MIN
-jl errClrValue_
+cmp		rax, CLR_MIN
+jl		errClrValue_
 
-cmp rax, CLR_MAX
-jg errClrValue_
+cmp		rax, CLR_MAX
+jg		errClrValue_
 
 ; if successful, store color
-mov qword[color], rax
+mov		qword[color], rax
 
-; check 
 ; check errSizSpec
-mov r13, qword[r14 + 40]
+mov		r9, qword[r15 + 40]
 ; check argv[3] for "-sz"
-cmp byte[r13], '-'
-jne errSizSpec_
-cmp byte[r13 + 1], 's'
-jne errSizSpec_
-cmp byte[r13 + 2], 'z'
-jne errSizSpec_
-cmp byte[r13 + 3], NULL
-jne errSizSpec_
+cmp		byte[r9], '-'
+jne		errSizSpec_
+cmp		byte[r9 + 1], 's'
+jne		errSizSpec_
+cmp		byte[r9 + 2], 'z'
+jne		errSizSpec_
+cmp 	byte[r9 + 3], NULL
+jne 	errSizSpec_
 
 ;check errSizValue
-mov rax, 0
-mov r8, 0
-lea r9, byte[rbp - 39]
-mov r13, qword[r14 + 48]
+mov 	rax, 0
+mov 	r10, 0
+lea 	r13, byte[rbp - 39]
+mov 	r9, qword[r15 + 48]
 
 arg6Lp:
-cmp byte[r13 + r8], NULL
-je arg6Convert
-mov al, byte[r13 + r8]
-mov byte[r9 + r8], al
-inc r8
-jmp arg6Lp
+cmp 	byte[r9 + r10], NULL
+je 		arg6Convert
+mov 	al, byte[r9 + r10]
+mov 	byte[r13 + r10], al
+inc 	r10
+jmp 	arg6Lp
 
 arg6Convert:
-; !!! FOR TESTING ONLY !!!
-; cmp byte[r9], "2"
-; jne next3
-; mov rax, FALSE
-; next3:
-mov byte[r9 + r8], NULL
-mov rdi, r9
-mov rsi, rdx
+mov		byte[r13 + r10], NULL
+mov 	rdi, r13
+mov 	rsi, rdx
 
-call aSept2int
+call 	aSept2int
 
-cmp rax, FALSE
-je errSizSpec_
+cmp 	rax, FALSE
+je		errSizSpec_
 
-cmp rax, SIZ_MIN
-jl errSizValue_
+cmp 	rax, SIZ_MIN
+jl 		errSizValue_
 
-cmp rax, SIZ_MAX
-jg errSizValue_
+cmp 	rax, SIZ_MAX
+jg 		errSizValue_
 
-mov rax, TRUE
-jmp doneSuccess
+mov 	rax, TRUE
+jmp 	doneSuccess
 
 ; if good, save size
-mov qword[size], rax
+mov 	qword[size], rax
 
 ; !!!!!! ERROR SECTION !!!!!!!!
 errUsage_:
-mov rdi, errUsage
-jmp doneError
+mov 	rdi, errUsage
+jmp 	doneError
 
 errBadCL_:
-mov rdi, errBadCL
-jmp doneError
+mov 	rdi, errBadCL
+jmp 	doneError
 
 errSpdSpec_:
-mov rdi, errSpdSpec
-jmp doneError
+mov 	rdi, errSpdSpec
+jmp 	doneError
 
 errSpdValue_:
-mov rdi, errSpdValue
-jmp doneError
+mov 	rdi, errSpdValue
+jmp 	doneError
 
 errClrSpec_:
-mov rdi, errClrSpec
-jmp doneError
+mov 	rdi, errClrSpec
+jmp 	doneError
 
 errClrValue_:
-mov rdi, errClrValue
-jmp doneError
+mov 	rdi, errClrValue
+jmp 	doneError
 
 errSizSpec_:
-mov rdi, errSizSpec
-jmp doneError
+mov 	rdi, errSizSpec
+jmp 	doneError
 
 errSizValue_:
-mov rdi, errSizValue
-jmp doneError
+mov 	rdi, errSizValue
+jmp 	doneError
 
 doneError:
-call printString
-mov rax, FALSE
+call	printString
+mov 	rax, FALSE
 
 doneSuccess:
-pop rsi
-pop rdi
-pop r14
-pop r13
-pop r12
-pop r9
-pop r8
-; pop rbx
-mov rsp, rbp
-pop rbp
+pop 	rsi
+pop 	rdi
+pop 	r15
+pop 	r13
+pop 	r12
+pop 	r10
+pop 	r9
+mov 	rsp, rbp
+pop 	rbp
 
 ret
+
+
+; global getParams
+; getParams:
+; push	rbp
+; mov		rbp, rsp
+; sub		rsp, 39
+
+; push	r8
+; push	r9
+; push	r12
+; push	r13
+; push	r14
+
+; mov		r12, rdi	; holds argc value
+; mov		r13, 0		; setup to hold argv value
+; mov		r14, rsi	; holds argv[] address
+
+; push 	rdi
+; push	rsi
+
+; ; check errUsage
+; cmp		r12, 1				; check if argc = 1
+; je		errUsage_			; jump to errUsage
+
+; ; check errBadCL
+; cmp		r12, 7
+; jne		errBadCL_
+
+; ; check errSpdSpec: argv[1] contains "-sp"
+; mov		r13, qword[r14 + 8]
+; cmp		byte[r13], '-'
+; jne		errSpdSpec_
+; cmp		byte[r13 + 1], 's'
+; jne		errSpdSpec_
+; cmp		byte[r13 + 2], 'p'
+; jne		errSpdSpec_
+; cmp		byte[r13 + 3], NULL
+; jne		errSpdSpec_
+
+; ; check errSpdValue
+; mov		rax, 0
+; mov		r8, 0
+; lea		r9, byte[rbp - 17]
+; mov		r13, qword[r14 + 16]
+
+; arg2Lp:
+; cmp		byte[r13 + r8], NULL
+; je		arg2Convert
+; mov		al, byte[r13 + r8]
+; mov		byte[r9 + r8], al
+; inc		r8
+; jmp		arg2Lp
+
+; arg2Convert:
+; mov		byte[r9 + r8], NULL
+; mov		rdi, r9
+; mov		rsi, rdx
+
+; call	aSept2int
+
+; cmp		rax, FALSE
+; je		errSpdSpec_
+
+; cmp		rax, SPD_MIN
+; jl		errSpdValue_
+
+; cmp		rax, SPD_MAX
+; jg		errSpdValue_
+
+; ; if good, save speed value
+; mov		qword[speed], rax
+
+; ; check errClrSpec
+; mov		r13, qword[r14 + 24]
+; ; check argv[3] for -cl
+; cmp		byte[r13], '-'
+; jne		errClrSpec_
+; cmp		byte[r13 + 1], 'c'
+; jne		errClrSpec_
+; cmp		byte[r13 + 2], 'l'
+; jne		errClrSpec_
+; cmp		byte[r13 + 3], NULL
+; jne		errClrSpec_
+
+; ; check errClrValue
+; mov		rax, 0
+; mov		r8, 0
+; lea		r9, byte[rbp - 28]
+; mov		r13, qword[r14 + 32]
+
+; arg4Lp:
+; cmp		byte[r13 + r8], NULL
+; je		arg4Convert
+; mov		al, byte[r13 + r8]
+; mov		byte[r9 + r8], al
+; inc		r8
+; jmp		arg4Lp
+
+; arg4Convert:
+; mov		byte[r9 + r8], NULL
+; mov		rdi, r9
+; mov		rsi, rdx
+
+; call	aSept2int
+
+; cmp		rax, FALSE
+; je		errClrSpec_
+
+; cmp		rax, CLR_MIN
+; jl		errClrValue_
+
+; cmp		rax, CLR_MAX
+; jg		errClrValue_
+
+; ; if successful, store color
+; mov		qword[color], rax
+
+; ; check errSizSpec
+; mov		r13, qword[r14 + 40]
+; ; check argv[3] for "-sz"
+; cmp		byte[r13], '-'
+; jne		errSizSpec_
+; cmp		byte[r13 + 1], 's'
+; jne		errSizSpec_
+; cmp		byte[r13 + 2], 'z'
+; jne		errSizSpec_
+; cmp 	byte[r13 + 3], NULL
+; jne 	errSizSpec_
+
+; ;check errSizValue
+; mov 	rax, 0
+; mov 	r8, 0
+; lea 	r9, byte[rbp - 39]
+; mov 	r13, qword[r14 + 48]
+
+; arg6Lp:
+; cmp 	byte[r13 + r8], NULL
+; je 		arg6Convert
+; mov 	al, byte[r13 + r8]
+; mov 	byte[r9 + r8], al
+; inc 	r8
+; jmp 	arg6Lp
+
+; arg6Convert:
+; mov		byte[r9 + r8], NULL
+; mov 	rdi, r9
+; mov 	rsi, rdx
+
+; call 	aSept2int
+
+; cmp 	rax, FALSE
+; je		errSizSpec_
+
+; cmp 	rax, SIZ_MIN
+; jl 		errSizValue_
+
+; cmp 	rax, SIZ_MAX
+; jg 		errSizValue_
+
+; mov 	rax, TRUE
+; jmp 	doneSuccess
+
+; ; if good, save size
+; mov 	qword[size], rax
+
+; ; !!!!!! ERROR SECTION !!!!!!!!
+; errUsage_:
+; mov 	rdi, errUsage
+; jmp 	doneError
+
+; errBadCL_:
+; mov 	rdi, errBadCL
+; jmp 	doneError
+
+; errSpdSpec_:
+; mov 	rdi, errSpdSpec
+; jmp 	doneError
+
+; errSpdValue_:
+; mov 	rdi, errSpdValue
+; jmp 	doneError
+
+; errClrSpec_:
+; mov 	rdi, errClrSpec
+; jmp 	doneError
+
+; errClrValue_:
+; mov 	rdi, errClrValue
+; jmp 	doneError
+
+; errSizSpec_:
+; mov 	rdi, errSizSpec
+; jmp 	doneError
+
+; errSizValue_:
+; mov 	rdi, errSizValue
+; jmp 	doneError
+
+; doneError:
+; call	printString
+; mov 	rax, FALSE
+
+; doneSuccess:
+; pop 	rsi
+; pop 	rdi
+; pop 	r14
+; pop 	r13
+; pop 	r12
+; pop 	r9
+; pop 	r8
+; mov 	rsp, rbp
+; pop 	rbp
+
+; ret
 
 
 
@@ -429,10 +630,9 @@ drawWheels:
 ;  Set draw speed step
 ;	sStep = speed / scale
 
-cvtsi2sd xmm0, dword[speed]
-; movss dword[s], xmm0
-divsd xmm0, qword[scale]
-movsd qword[sStep], xmm0
+cvtsi2sd 	xmm0, dword[speed]
+divsd 		xmm0, qword[scale]
+movsd 		qword[sStep], xmm0
 
 ; -----
 ;  Prepare for drawing
@@ -448,12 +648,12 @@ movsd qword[sStep], xmm0
 ;  Set draw color(r,g,b)
 ;	uses glColor3ub(r,g,b)
 
-mov r9d, dword[color]
-movzx rdx, r9b
-shr r9, 8
-movzx rsi, r9b
-shr r9, 8
-movzx rdi, r9b
+mov 	r9d, dword[color]
+movzx 	rdx, r9b
+shr 	r9, 8
+movzx 	rsi, r9b
+shr 	r9, 8
+movzx 	rdi, r9b
  
 call glColor3ub
 
@@ -462,318 +662,316 @@ call glColor3ub
 ;	iterate t from 0.0 to 2*pi by tStep
 ;	uses glVertex2d(x,y) for each formula
 
-movsd xmm0, qword[fltZero]
-movsd qword[t], xmm0
+movsd 	xmm0, qword[fltZero]
+movsd 	qword[t], xmm0
 
 ; for (t = 0; t <= 2pi; t += tStep) {}
 mainPlotLp:
 ; calculate 2pi
-movsd xmm0, qword[pi]
-mulsd xmm0, qword[fltTwo]
+movsd 	xmm0, qword[pi]
+mulsd 	xmm0, qword[fltTwo]
 
 ; t <= 2pi
 ucomisd xmm0, qword[t]
-jb mainPlotEnd
+jb 		mainPlotEnd
 
 xy1:
 ; find x1 = cos(t)
-movsd xmm0, qword[t]
-call cos
-movsd qword[x], xmm0
-; cvtsd2si edi, xmm0
+movsd 	xmm0, qword[t]
+call 	cos
+movsd 	qword[x], xmm0
 
 ; find y1 = sin(t)
-movsd xmm0, qword[t]
-call sin
-movsd qword[y], xmm0
-; cvtsd2si esi, xmm0
+movsd 	xmm0, qword[t]
+call 	sin
+movsd 	qword[y], xmm0
 
 ; plot points
-movsd xmm0, qword[x]
-movsd xmm1, qword[y]
-call glVertex2d
+movsd 	xmm0, qword[x]
+movsd 	xmm1, qword[y]
+call 	glVertex2d
 
 
 xy2:
 ; find x
-movsd xmm0, qword[t]
-call cos
-divsd xmm0, qword[fltThree]		; fltTmp1 = cos(t) / 3
-movsd qword[fltTmp1], xmm0
+movsd 	xmm0, qword[t]
+call 	cos
+divsd 	xmm0, qword[fltThree]		; fltTmp1 = cos(t) / 3
+movsd 	qword[fltTmp1], xmm0
 
 ; 2piS
-movsd xmm0, qword[pi]
-mulsd xmm0, qword[fltTwo]
-mulsd xmm0, qword[s]
+movsd 	xmm0, qword[pi]
+mulsd 	xmm0, qword[fltTwo]
+mulsd 	xmm0, qword[s]
 ; save to 2piS for later
-movsd qword[fltTwoPiS], xmm0
+movsd 	qword[fltTwoPiS], xmm0
 ; cos(2piS)
-call cos
+call 	cos
 ; 2 * cos(2piS)
-mulsd xmm0, qword[fltTwo]
+mulsd 	xmm0, qword[fltTwo]
 ; /3 
-divsd xmm0, qword[fltThree]
+divsd 	xmm0, qword[fltThree]
 
 ; add together then save to x
-addsd xmm0, qword[fltTmp1]
-movsd qword[x], xmm0
+addsd 	xmm0, qword[fltTmp1]
+movsd 	qword[x], xmm0
 
 ; find y
-movsd xmm0, qword[t]
-call sin
-divsd xmm0, qword[fltThree]		; fltTmp1 = cos(t) / 3
-movsd qword[fltTmp1], xmm0
+movsd 	xmm0, qword[t]
+call 	sin
+divsd 	xmm0, qword[fltThree]		; fltTmp1 = cos(t) / 3
+movsd 	qword[fltTmp1], xmm0
 
 ; 2piS
-movsd xmm0, qword[pi]
-mulsd xmm0, qword[fltTwo]
-mulsd xmm0, qword[s]
+movsd 	xmm0, qword[pi]
+mulsd 	xmm0, qword[fltTwo]
+mulsd 	xmm0, qword[s]
 ; save to 2piS for later
-movsd qword[fltTwoPiS], xmm0
+movsd 	qword[fltTwoPiS], xmm0
 ; sin(2piS)
-call sin
+call 	sin
 ; 2 * sin(2piS)
-mulsd xmm0, qword[fltTwo]
+mulsd 	xmm0, qword[fltTwo]
 ; /3 
-divsd xmm0, qword[fltThree]
+divsd 	xmm0, qword[fltThree]
 
 ; add together then save to y
-addsd xmm0, qword[fltTmp1]
-movsd qword[y], xmm0
+addsd 	xmm0, qword[fltTmp1]
+movsd 	qword[y], xmm0
 
 ; plot x2 and y2
-movsd xmm0, qword[x]
-movsd xmm1, qword[y]
-call glVertex2d
+movsd	xmm0, qword[x]
+movsd 	xmm1, qword[y]
+call 	glVertex2d
 
 
 xy3:
 ; X calc first number, save to fltTmp1
 ; 2piS
-movsd xmm0, qword[fltTwoPiS]
+movsd 	xmm0, qword[fltTwoPiS]
 ; cos(2piS)
-call cos
+call 	cos
 ; 2 * cos(2piS)
-mulsd xmm0, qword[fltTwo]
+mulsd 	xmm0, qword[fltTwo]
 ; /3 
-divsd xmm0, qword[fltThree]
-movsd qword[fltTmp1], xmm0
+divsd 	xmm0, qword[fltThree]
+movsd 	qword[fltTmp1], xmm0
 
 ;calc second number, save to xmm0
 ; numerator - tcos(4piS)
-movsd xmm0, qword[fltTwoPiS]
-mulsd xmm0, qword[fltTwo]
-call cos
-mulsd xmm0, qword[t]
+movsd 	xmm0, qword[fltTwoPiS]
+mulsd 	xmm0, qword[fltTwo]
+call 	cos
+mulsd	xmm0, qword[t]
 ; denominator - 6pi
-movsd xmm1, qword[pi]
-mulsd xmm1, qword[fltSix]
-movsd qword[fltTmp2], xmm1
+movsd 	xmm1, qword[pi]
+mulsd 	xmm1, qword[fltSix]
+movsd 	qword[fltTmp2], xmm1
 ;num / den
-divsd xmm0, qword[fltTmp2]
+divsd	xmm0, qword[fltTmp2]
 
 ; num1 + num2, save to x
-addsd xmm0, qword[fltTmp1]
-movsd qword[x], xmm0
+addsd 	xmm0, qword[fltTmp1]
+movsd 	qword[x], xmm0
 
 ; Y calc first number, save to fltTmp1
 ; 2piS
-movsd xmm0, qword[fltTwoPiS]
+movsd 	xmm0, qword[fltTwoPiS]
 ; sin(2piS)
-call sin
+call 	sin
 ; 2 * sin(2piS)
-mulsd xmm0, qword[fltTwo]
+mulsd 	xmm0, qword[fltTwo]
 ; /3 
-divsd xmm0, qword[fltThree]
-movsd qword[fltTmp1], xmm0
+divsd 	xmm0, qword[fltThree]
+movsd 	qword[fltTmp1], xmm0
 
 ;calc second number, save to xmm0
 ; numerator - tsin(4piS)
-movsd xmm0, qword[fltTwoPiS]
-mulsd xmm0, qword[fltTwo]
-call sin
-mulsd xmm0, qword[t]
+movsd 	xmm0, qword[fltTwoPiS]
+mulsd 	xmm0, qword[fltTwo]
+call 	sin
+mulsd 	xmm0, qword[t]
 ; denominator - 6pi
-movsd xmm1, qword[pi]
-mulsd xmm1, qword[fltSix]
-movsd qword[fltTmp2], xmm1
+movsd 	xmm1, qword[pi]
+mulsd 	xmm1, qword[fltSix]
+movsd 	qword[fltTmp2], xmm1
 ;num / den
-divsd xmm0, qword[fltTmp2]
+divsd 	xmm0, qword[fltTmp2]
 
 ; num1 - num2, save to y
-movsd xmm1, xmm0
-movsd xmm0, qword[fltTmp1]
-subsd xmm0, xmm1
-movsd qword[y], xmm0
+movsd 	xmm1, xmm0
+movsd 	xmm0, qword[fltTmp1]
+subsd 	xmm0, xmm1
+movsd 	qword[y], xmm0
 
 ; plot xy3
-movsd xmm0, qword[x]
-movsd xmm1, qword[y]
-call glVertex2d
+movsd 	xmm0, qword[x]
+movsd 	xmm1, qword[y]
+call 	glVertex2d
 
 
 xy4:
 ; X calc first number, save to fltTmp1
 ; 2piS
-movsd xmm0, qword[fltTwoPiS]
+movsd 	xmm0, qword[fltTwoPiS]
 ; cos(2piS)
-call cos
+call 	cos
 ; 2 * cos(2piS)
-mulsd xmm0, qword[fltTwo]
+mulsd 	xmm0, qword[fltTwo]
 ; /3 
-divsd xmm0, qword[fltThree]
-movsd qword[fltTmp1], xmm0
+divsd 	xmm0, qword[fltThree]
+movsd 	qword[fltTmp1], xmm0
 
 ; calc second number
 ; numerator to xmm0: 4piS
-movsd xmm0, qword[fltTwoPiS]
-mulsd xmm0, qword[fltTwo]
+movsd 	xmm0, qword[fltTwoPiS]
+mulsd 	xmm0, qword[fltTwo]
 ; 2pi/3
-movsd xmm1, qword[pi]
-mulsd xmm1, qword[fltTwo]
-divsd xmm1, qword[fltThree]
+movsd 	xmm1, qword[pi]
+mulsd 	xmm1, qword[fltTwo]
+divsd 	xmm1, qword[fltThree]
 ; movsd qword[fltTmp2], xmm1
 ; tcos(4piS + 2pi/3)
-addsd xmm0, xmm1
-call cos
-mulsd xmm0, qword[t]
+addsd 	xmm0, xmm1
+call 	cos
+mulsd 	xmm0, qword[t]
 ; denominator to xmm1: 6pi
-movsd xmm1, qword[pi]
-mulsd xmm1, qword[fltSix]
+movsd 	xmm1, qword[pi]
+mulsd 	xmm1, qword[fltSix]
 ; movsd qword[fltTmp2], xmm1
 ; num/den
-divsd xmm0, xmm1
+divsd 	xmm0, xmm1
 
 ; add together, save to x
-addsd xmm0, qword[fltTmp1]
-movsd qword[x], xmm0
+addsd 	xmm0, qword[fltTmp1]
+movsd 	qword[x], xmm0
 
 ; Y calc first number, save to fltTmp1
 ; 2piS
-movsd xmm0, qword[fltTwoPiS]
+movsd 	xmm0, qword[fltTwoPiS]
 ; sin(2piS)
-call sin
+call 	sin
 ; 2 * sin(2piS)
-mulsd xmm0, qword[fltTwo]
+mulsd 	xmm0, qword[fltTwo]
 ; /3 
-divsd xmm0, qword[fltThree]
-movsd qword[fltTmp1], xmm0
+divsd 	xmm0, qword[fltThree]
+movsd 	qword[fltTmp1], xmm0
 
 ; calc second number
 ; numerator to xmm0: 4piS
-movsd xmm0, qword[fltTwoPiS]
-mulsd xmm0, qword[fltTwo]
+movsd 	xmm0, qword[fltTwoPiS]
+mulsd 	xmm0, qword[fltTwo]
 ; 2pi/3
-movsd xmm1, qword[pi]
-mulsd xmm1, qword[fltTwo]
-divsd xmm1, qword[fltThree]
+movsd 	xmm1, qword[pi]
+mulsd 	xmm1, qword[fltTwo]
+divsd 	xmm1, qword[fltThree]
 ; movsd qword[fltTmp2], xmm1
 ; tsin(4piS + 2pi/3)
-addsd xmm0, xmm1
-call sin
-mulsd xmm0, qword[t]
+addsd 	xmm0, xmm1
+call 	sin
+mulsd 	xmm0, qword[t]
 ; denominator to xmm1: 6pi
-movsd xmm1, qword[pi]
-mulsd xmm1, qword[fltSix]
+movsd 	xmm1, qword[pi]
+mulsd 	xmm1, qword[fltSix]
 ; movsd qword[fltTmp2], xmm1
 ; num/den
-divsd xmm0, xmm1
+divsd 	xmm0, xmm1
 
 ; num1 - num2, save to y
-movsd xmm1, xmm0
-movsd xmm0, qword[fltTmp1]
-subsd xmm0, xmm1
-movsd qword[y], xmm0
+movsd 	xmm1, xmm0
+movsd 	xmm0, qword[fltTmp1]
+subsd 	xmm0, xmm1
+movsd 	qword[y], xmm0
 
 ; plot xy4
-movsd xmm0, qword[x]
-movsd xmm1, qword[y]
-call glVertex2d
+movsd 	xmm0, qword[x]
+movsd 	xmm1, qword[y]
+call 	glVertex2d
 
 
 xy5:
 ; X calc first number, save to fltTmp1
 ; 2piS
-movsd xmm0, qword[fltTwoPiS]
+movsd 	xmm0, qword[fltTwoPiS]
 ; cos(2piS)
-call cos
+call 	cos
 ; 2 * cos(2piS)
-mulsd xmm0, qword[fltTwo]
+mulsd 	xmm0, qword[fltTwo]
 ; /3 
-divsd xmm0, qword[fltThree]
-movsd qword[fltTmp1], xmm0
+divsd 	xmm0, qword[fltThree]
+movsd 	qword[fltTmp1], xmm0
 
 ; calc second number
 ; numerator to xmm0: 4piS
-movsd xmm0, qword[fltTwoPiS]
-mulsd xmm0, qword[fltTwo]
+movsd 	xmm0, qword[fltTwoPiS]
+mulsd 	xmm0, qword[fltTwo]
 ; 2pi/3
-movsd xmm1, qword[pi]
-mulsd xmm1, qword[fltTwo]
-divsd xmm1, qword[fltThree]
+movsd 	xmm1, qword[pi]
+mulsd 	xmm1, qword[fltTwo]
+divsd 	xmm1, qword[fltThree]
 ; movsd qword[fltTmp2], xmm1
 ; tcos(4piS + 2pi/3)
-subsd xmm0, xmm1
-call cos
-mulsd xmm0, qword[t]
+subsd 	xmm0, xmm1
+call 	cos
+mulsd 	xmm0, qword[t]
 ; denominator to xmm1: 6pi
-movsd xmm1, qword[pi]
-mulsd xmm1, qword[fltSix]
+movsd 	xmm1, qword[pi]
+mulsd 	xmm1, qword[fltSix]
 ; movsd qword[fltTmp2], xmm1
 ; num/den
-divsd xmm0, xmm1
+divsd 	xmm0, xmm1
 
 ; add together, save to x
-addsd xmm0, qword[fltTmp1]
-movsd qword[x], xmm0
+addsd 	xmm0, qword[fltTmp1]
+movsd 	qword[x], xmm0
 
 ; Y calc first number, save to fltTmp1
 ; 2piS
-movsd xmm0, qword[fltTwoPiS]
+movsd 	xmm0, qword[fltTwoPiS]
 ; sin(2piS)
-call sin
+call 	sin
 ; 2 * sin(2piS)
-mulsd xmm0, qword[fltTwo]
+mulsd 	xmm0, qword[fltTwo]
 ; /3 
-divsd xmm0, qword[fltThree]
-movsd qword[fltTmp1], xmm0
+divsd 	xmm0, qword[fltThree]
+movsd 	qword[fltTmp1], xmm0
 
 ; calc second number
 ; numerator to xmm0: 4piS
-movsd xmm0, qword[fltTwoPiS]
-mulsd xmm0, qword[fltTwo]
+movsd 	xmm0, qword[fltTwoPiS]
+mulsd 	xmm0, qword[fltTwo]
 ; 2pi/3
-movsd xmm1, qword[pi]
-mulsd xmm1, qword[fltTwo]
-divsd xmm1, qword[fltThree]
+movsd 	xmm1, qword[pi]
+mulsd 	xmm1, qword[fltTwo]
+divsd 	xmm1, qword[fltThree]
 ; movsd qword[fltTmp2], xmm1
 ; tsin(4piS + 2pi/3)
-subsd xmm0, xmm1
-call sin
-mulsd xmm0, qword[t]
+subsd 	xmm0, xmm1
+call 	sin
+mulsd 	xmm0, qword[t]
 ; denominator to xmm1: 6pi
-movsd xmm1, qword[pi]
-mulsd xmm1, qword[fltSix]
+movsd 	xmm1, qword[pi]
+mulsd 	xmm1, qword[fltSix]
 ; movsd qword[fltTmp2], xmm1
 ; num/den
-divsd xmm0, xmm1
+divsd 	xmm0, xmm1
 
 ; num1 - num2, save to y
-movsd xmm1, xmm0
-movsd xmm0, qword[fltTmp1]
-subsd xmm0, xmm1
-movsd qword[y], xmm0
+movsd 	xmm1, xmm0
+movsd 	xmm0, qword[fltTmp1]
+subsd 	xmm0, xmm1
+movsd 	qword[y], xmm0
 
 ; plot xy4
-movsd xmm0, qword[x]
-movsd xmm1, qword[y]
-call glVertex2d
+movsd 	xmm0, qword[x]
+movsd 	xmm1, qword[y]
+call 	glVertex2d
 
 ; t += tStep
-movsd xmm0, qword[t]
-addsd xmm0, qword[tStep]
-movsd qword[t], xmm0
-jmp mainPlotLp
+movsd 	xmm0, qword[t]
+addsd 	xmm0, qword[tStep]
+movsd 	qword[t], xmm0
+jmp 	mainPlotLp
 ; }
 
 mainPlotEnd:
@@ -859,66 +1057,129 @@ prtDone:
 
 ; ******************************************************************
 
+
 global aSept2int
 aSept2int:
 
-push rbx
-push rcx
-push rdx
-push r12
-push r13
-push r14
+push 	rbx
+push 	rcx
+push 	rdx
+push 	r12
+push 	r13
+push 	r14
 
-mov r10, 0
-mov r14, 0
-mov rax, 0
+mov 	r10, 0
+mov 	r14, 0
+mov 	rax, 0
 
-jmp checkLength
+jmp 	checkLength
 
 spaces:
-cmp rax, 0
-jne convFail
-inc r10
+cmp 	rax, 0
+jne 	convFail
+inc 	r10
 
 checkLength:
-mov r11, 0
-cmp r14, 50
-je convFail
+mov 	r9, 0
+cmp 	r14, 50
+je 		convFail
 
-mov r11b, byte[rdi + r10]
-mov rdx, 7
-cmp r11b, NULL
-je convEnd
+mov 	r9b, byte[rdi + r10]
+mov 	rdx, 7
+cmp 	r9b, NULL
+je 		convEnd
 
 conv2Int:
-cmp r11b, ' '
-je spaces
-sub r11b, '0'
-cmp r11b, 0
-jl convFail
-cmp r11b, 7
-jg convFail
-mul rdx
-add rax, r11
-; add al, r11b
-inc r14
-inc r10
-jmp checkLength
+cmp 	r9b, ' '
+je 		spaces
+sub 	r9b, '0'
+cmp 	r9b, 0
+jl 		convFail
+cmp 	r9b, 7
+jg 		convFail
+mul 	rdx
+add 	rax, r9
+inc 	r14
+inc 	r10
+jmp 	checkLength
 
 convSuccess:
-mov dword[rsi], eax
-mov rax, TRUE
-jmp convEnd
+mov 	dword[rsi], eax
+mov 	rax, TRUE
+jmp 	convEnd
 
 convFail:
-mov rax, FALSE
+mov 	rax, FALSE
 
 convEnd:
-pop r14
-pop r13
-pop r12
-pop rdx
-pop rcx
-pop rbx
+pop 	r14
+pop 	r13
+pop 	r12
+pop 	rdx
+pop 	rcx
+pop 	rbx
 
 ret
+
+; global aSept2int
+; aSept2int:
+
+; push 	rbx
+; push 	rcx
+; push 	rdx
+; push 	r12
+; push 	r13
+; push 	r14
+
+; mov 	r10, 0
+; mov 	r14, 0
+; mov 	rax, 0
+
+; jmp 	checkLength
+
+; spaces:
+; cmp 	rax, 0
+; jne 	convFail
+; inc 	r10
+
+; checkLength:
+; mov 	r11, 0
+; cmp 	r14, 50
+; je 		convFail
+
+; mov 	r11b, byte[rdi + r10]
+; mov 	rdx, 7
+; cmp 	r11b, NULL
+; je 		convEnd
+
+; conv2Int:
+; cmp 	r11b, ' '
+; je 		spaces
+; sub 	r11b, '0'
+; cmp 	r11b, 0
+; jl 		convFail
+; cmp 	r11b, 7
+; jg 		convFail
+; mul 	rdx
+; add 	rax, r11
+; inc 	r14
+; inc 	r10
+; jmp 	checkLength
+
+; convSuccess:
+; mov 	dword[rsi], eax
+; mov 	rax, TRUE
+; jmp 	convEnd
+
+; convFail:
+; mov 	rax, FALSE
+
+; convEnd:
+; pop 	r14
+; pop 	r13
+; pop 	r12
+; pop 	rdx
+; pop 	rcx
+; pop 	rbx
+
+; ret
