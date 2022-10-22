@@ -681,7 +681,10 @@ divsd xmm0, xmm1
 addsd xmm0, qword[fltTmp1]
 movsd qword[y], xmm0
 
-
+; plot xy4
+movsd xmm0, qword[x]
+movsd xmm1, qword[y]
+call glVertex2d
 
 ; t += tStep
 movsd xmm0, qword[t]
