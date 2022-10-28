@@ -213,6 +213,46 @@ jne 	errWriteName_
 cmp		byte[r9 + r10 - 5], '.'
 je 		errWriteName_
 
+; file names good, check if open success argv[2]
+push 	rdi
+push	rsi
+
+mov		rax,	SYS_open
+mov		rdi,	qword[rsi+16]
+mov		rsi,	O_RDONLY
+
+push	rcx
+push	rdx
+syscall
+pop		rdx
+pop		rcx
+
+pop 	rsi
+pop		rdi
+cmp		rax,	0
+jl		errReadFile_
+mov		byte[rdx],	al
+
+; argv[2] good, check if open success argv[3]
+push	rdi
+push	rsi
+
+mov		rax,	SYS_creat
+mov		rdi,	qword[rsi+32]
+mov		rsi,	S_IRWXU
+
+push 	rcx
+push	rdx
+syscall
+pop		rdx
+pop		rcx
+
+pop		rsi
+pop		rdi
+cmp		rax,	0
+jl		errWriteFile_
+mov		byte[rcx],	al
+
 jmp 	doneSuccess
 
 usageMsg_:
@@ -246,6 +286,7 @@ mov 	rdi, errReadFile
 jmp 	doneError
 
 errWriteFile_:
+mov		rax, FALSE
 mov		rdi, errWriteFile
 jmp		doneError
 
@@ -266,8 +307,6 @@ pop 	r9
 mov 	rsp, rbp
 pop 	rbp
 ret
-
-
 
 ; ***************************************************************
 ;  Read, verify, and set header information
