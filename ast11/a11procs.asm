@@ -162,18 +162,20 @@ cmp		r12, 1
 je		usageMsg_
 
 ; check errIncomplete
-cmp		r12, 7
-jne errIncomplete_
+cmp		r12, 2
+je errIncomplete_
 
 ; check errExtra
-cmp 	r12, 7
-jg		errExtra_
+cmp 	r12, 3
+ja		errExtra_
 
 ; check errReadName argv[2]
 mov		r9, qword[r15 + 8]
 mov		r10, 0
+; mov r15, 0; !!!!! TESTING ONLY DELETE LATER !!!!!
 readNameLp:
-cmp		byte[r9 + r10], ' '
+; mov 	r15b, byte[r9 + r10]; !!!!! TESTING ONLY DELETE LATER !!!!!
+cmp		byte[r9 + r10], 0
 je		spaceFound
 inc		r10
 jmp		readNameLp
@@ -193,33 +195,38 @@ je 		errReadName_
 ; check errReadName argv[3]
 mov		r9, qword[r15 + 16]
 mov		r10, 0
-readNameLp:
-cmp		byte[r9 + r10], ' '
-je		spaceFound
+readNameLp2:
+cmp		byte[r9 + r10], 0
+je		spaceFound2
 inc		r10
-jmp		readNameLp
+jmp		readNameLp2
 
-spaceFound:
+spaceFound2:
 cmp		byte[r9 + r10 - 1], 'p'
-jne 	errReadName_
+jne 	errWriteName_
 cmp		byte[r9 + r10 - 2], 'm'
-jne 	errReadName_
+jne 	errWriteName_
 cmp		byte[r9 + r10 - 3], 'b'
-jne 	errReadName_
+jne 	errWriteName_
 cmp		byte[r9 + r10 - 4], '.'
-jne 	errReadName_
+jne 	errWriteName_
 cmp		byte[r9 + r10 - 5], '.'
-je 		errReadName_
+je 		errWriteName_
+
+jmp 	doneSuccess
 
 usageMsg_:
+mov		rax, FALSE
 mov 	rdi, usageMsg
 jmp 	doneError
 
 errIncomplete_:
+mov		rax, FALSE
 mov 	rdi, errIncomplete
 jmp 	doneError
 
 errExtra_:
+mov		rax, FALSE
 mov 	rdi, errExtra
 jmp 	doneError
 
@@ -229,10 +236,12 @@ mov 	rdi, errReadName
 jmp 	doneError
 
 errWriteName_:
+mov		rax, FALSE
 mov 	rdi, errWriteName
 jmp 	doneError
 
 errReadFile_:
+mov		rax, FALSE
 mov 	rdi, errReadFile
 jmp 	doneError
 
@@ -241,6 +250,7 @@ mov		rdi, errWriteFile
 jmp		doneError
 
 doneError:
+mov		rax, FALSE
 call	printString
 mov 	rax, FALSE
 
@@ -299,7 +309,10 @@ ret
 ;	TRUE or FALSE
 
 
-;	YOUR CODE GOES HERE
+global setImageInfo
+setImageInfo:
+
+ret
 
 
 
@@ -329,8 +342,10 @@ ret
 ;  ONLY by this routine and as such are not passed.
 
 
-;	YOUR CODE GOES HERE
+global readRow
+readRow:
 
+ret
 
 
 ; ***************************************************************
@@ -359,8 +374,10 @@ ret
 ;  ONLY by this routine and as such are not passed.
 
 
-;	YOUR CODE GOES HERE
+global writeRow
+writeRow:
 
+ret
 
 
 ; ******************************************************************
