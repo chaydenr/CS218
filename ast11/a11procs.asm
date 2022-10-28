@@ -218,7 +218,7 @@ push 	rdi
 push	rsi
 
 mov		rax,	SYS_open
-mov		rdi,	qword[rsi+16]
+mov		rdi,	qword[r15+8]
 mov		rsi,	O_RDONLY
 
 push	rcx
@@ -238,8 +238,8 @@ push	rdi
 push	rsi
 
 mov		rax,	SYS_creat
-mov		rdi,	qword[rsi+32]
-mov		rsi,	S_IRWXU
+mov		rdi,	qword[r15+16]
+mov		rsi,	S_IXUSR
 
 push 	rcx
 push	rdx
