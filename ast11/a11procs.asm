@@ -395,6 +395,13 @@ cmp		byte[header + 1], 'M'
 jne		errFileType_
 
 
+; check file size (width * height * 3 + HEADER_SIZE)
+mov		rax, qword[r12]
+mul		r13
+mov		r14, 3
+mul 	r14
+add		rax, qword[HEADER_SIZE]
+
 ; !!!! Error messages !!!!!
 errReadHdr_:
 mov		rdi, errReadHdr
