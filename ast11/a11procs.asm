@@ -415,6 +415,17 @@ cmp		word[header + 28], 24
 jne		errDepth_
 
 
+; check errCompType
+cmp		word[header + 30], 0
+jne		errCompType_
+
+
+
+; if everything good, return true, old img width, old img height
+mov		rax, TRUE
+mov		rdx, r12
+mov		rcx, r13
+jmp doneSuccess2
 
 ; !!!! Error messages !!!!!
 errReadHdr_:
@@ -433,10 +444,15 @@ errDepth_:
 mov 	rdi, errDepth
 jmp		doneError2
 
+errCompType_:
+mov		rdi, errCompType
+jmp doneError2
+
 doneError2:
 call	printString
 mov 	rax, FALSE
 
+doneSuccess2:
 pop		r13
 pop		r12
 pop		r11
