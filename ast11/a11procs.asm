@@ -411,6 +411,10 @@ jne		errSize_
 
 
 ; check errDepth
+cmp		word[header + 28], 24
+jne		errDepth_
+
+
 
 ; !!!! Error messages !!!!!
 errReadHdr_:
@@ -424,6 +428,10 @@ jmp		doneError2
 errSize_:
 mov		rdi, errSize
 jmp 	doneError2
+
+errDepth_:
+mov 	rdi, errDepth
+jmp		doneError2
 
 doneError2:
 call	printString
