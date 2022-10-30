@@ -396,11 +396,21 @@ jne		errFileType_
 
 
 ; check file size (width * height * 3 + HEADER_SIZE)
-mov		rax, qword[r12]
-mul		r13
+mov		ax, word[header + 18]
+mov 	r14, 0
+mov		r14w, word[header + 22]
+mul 	r14
+;mul		word[header + 22]
 mov		r14, 3
 mul 	r14
-add		rax, qword[HEADER_SIZE]
+add		rax, HEADER_SIZE		; rax holds calculated file size
+
+mov		r14d, dword[header + 2]
+cmp 	rax, r14
+jne		errSize_
+
+
+; check errDepth
 
 ; !!!! Error messages !!!!!
 errReadHdr_:
@@ -410,6 +420,10 @@ jmp		doneError2
 errFileType_:
 mov		rdi, errFileType
 jmp		doneError2
+
+errSize_:
+mov		rdi, errSize
+jmp 	doneError2
 
 doneError2:
 call	printString
