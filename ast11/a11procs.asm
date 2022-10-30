@@ -420,6 +420,49 @@ cmp		word[header + 30], 0
 jne		errCompType_
 
 
+; error checks done, update header with new img info
+; calculate new file size
+mov		rax, r8
+mul		r9
+mov		r14, 3
+mul		r14
+add		rax, HEADER_SIZE
+; store to new file size to header
+mov		dword[header + 2], eax
+
+; store new width & height
+mov 	word[header + 18], r8w	
+
+; write updated header to new image
+
+mov rax, sys_write
+mov rdi, r11
+mov rsi, header
+mov rdx, HEADER_SIZE
+syscall
+
+; CHECK FILE!!! FOR DEBUGGING PURPOSES ONLY, DELETE LATER
+; read header from original image
+mov		rax, SYS_read
+mov		rdi, r11		; !!!! may be able to delete !!!!
+mov		rsi, header
+mov		rdx, HEADER_SIZE
+syscall
+
+; check if file read was successful
+cmp		rax, 0
+jl		errReadHdr_
+
+; check if file is BMP
+cmp		byte[header], 'B'
+jne		errFileType_
+cmp		byte[header + 1], 'M'
+jne		errFileType_
+
+
+
+; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 ; if everything good, return true, old img width, old img height
 mov		rax, TRUE
