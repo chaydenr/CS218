@@ -375,6 +375,7 @@ mov		r11, rsi		; write file 		(value)
 mov		r12, rdx		; old image width 	(address)
 mov		r13, rcx		; old image height 	(address)
 
+
 ; read header from original image
 mov		rax, SYS_read
 mov		rdi, r10		; !!!! may be able to delete !!!!
@@ -387,11 +388,20 @@ cmp		rax, 0
 jl		errReadHdr_
 
 
+; check if file is BMP
+cmp		byte[header], 'B'
+jne		errFileType_
+cmp		byte[header + 1], 'M'
+jne		errFileType_
 
 
 ; !!!! Error messages !!!!!
 errReadHdr_:
 mov		rdi, errReadHdr
+jmp		doneError2
+
+errFileType_:
+mov		rdi, errFileType
 jmp		doneError2
 
 doneError2:
