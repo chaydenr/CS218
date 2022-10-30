@@ -42,9 +42,9 @@ O_RDONLY	equ	000000q			; file permission - read only
 O_WRONLY	equ	000001q			; file permission - write only
 O_RDWR		equ	000002q			; file permission - read and write
 
-S_IRUSR		equ	00400q
-S_IWUSR		equ	00200q
-S_IXUSR		equ	00100q
+S_IRUSR		equ	00400q		; owner, read persmission
+S_IWUSR		equ	00200q		; owner, write permission
+S_IXUSR		equ	00100q		; owner, execute permission
 
 ; -----
 ;  Define program specific constants.
@@ -237,10 +237,11 @@ mov		byte[rdx],	al
 push	rdi
 push	rsi
 
+; !!!! CHECK THAT THIS PART WORKS PROPERLY !!!!
 mov		rax,	SYS_creat
 mov		rdi,	qword[r15+16]
 mov		rsi,	S_IXUSR
-
+; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 push 	rcx
 push	rdx
 syscall
@@ -255,6 +256,7 @@ mov		byte[rcx],	al
 
 jmp 	doneSuccess
 
+; !!!!!! ERROR SECTION !!!!!!
 usageMsg_:
 mov		rax, FALSE
 mov 	rdi, usageMsg
@@ -320,12 +322,12 @@ ret
 
 ; -----
 ;  2 -> BM				(+0)
-;  4 file size			(+2)
+;  4 file size			(+2)			; returns with new file size
 ;  4 skip				(+6)
 ;  4 header size		(+10)
 ;  4 skip				(+14)
-;  4 width				(+18)
-;  4 height				(+22)
+;  4 width				(+18)			; returns with new width
+;  4 height				(+22)			; returns with new height 
 ;  2 skip				(+26)
 ;  2 depth (16/24/32)			(+28)
 ;  4 compression method code	(+30)
@@ -334,12 +336,12 @@ ret
 
 ; -----
 ;   Arguments:
-;	- read file descriptor (value)
-;	- write file descriptor (value)
-;	- old image width (address)
-;	- old image height (address)
-;	- new image width (value)
-;	- new image height (value)
+;	- read file descriptor (value)		; rdi
+;	- write file descriptor (value)		; rsi
+;	- old image width (address)			; rdx
+;	- old image height (address)		; rcx
+;	- new image width (value)			; r8
+;	- new image height (value)			; r9
 
 ;  Returns:
 ;	file size (via reference)
@@ -348,9 +350,57 @@ ret
 ;	TRUE or FALSE
 
 
+; errReadHdr	db	"Error, unable to read header from source image file."
+; 		db	LF, NULL
+; errFileType	db	"Error, invalid file signature.", LF, NULL
+; errDepth	db	"Error, unsupported color depth.  Must be 24-bit color."
+; 		db	LF, NULL
+; errCompType	db	"Error, only non-compressed images are supported."
+; 		db	LF, NULL
+; errSize		db	"Error, bitmap block size inconsistent.", LF, NULL
+; errWriteHdr	db	"Error, unable to write header to output image file.", LF,
+; 		db	"Program terminated.", LF, NULL
+
+
 global setImageInfo
 setImageInfo:
+push	r10
+push	r11
+push	r12
+push	r13
 
+; preserve argument values
+mov		r10, rdi		; read file 		(value)
+mov		r11, rsi		; write file 		(value)
+mov		r12, rdx		; old image width 	(address)
+mov		r13, rcx		; old image height 	(address)
+
+; read header from original image
+mov		rax, SYS_read
+mov		rdi, r10		; !!!! may be able to delete !!!!
+mov		rsi, header
+mov		rdx, HEADER_SIZE
+
+; check if file read was successful
+cmp		rax, 0
+jl		errReadHdr_
+
+
+
+
+; !!!! Error messages !!!!!
+errReadHdr_:
+mov		rdi, errReadHdr
+jmp		doneError2
+
+doneError2:
+call	printString
+mov 	rax, FALSE
+
+pop		r13
+pop		r12
+pop		r11
+pop		r10
 ret
 
 
