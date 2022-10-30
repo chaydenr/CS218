@@ -380,6 +380,7 @@ mov		rax, SYS_read
 mov		rdi, r10		; !!!! may be able to delete !!!!
 mov		rsi, header
 mov		rdx, HEADER_SIZE
+syscall
 
 ; check if file read was successful
 cmp		rax, 0
