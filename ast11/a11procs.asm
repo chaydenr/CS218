@@ -584,6 +584,12 @@ ret
 
 global readRow
 readRow:
+push	r8
+push	r9
+push	r10
+push	r11
+push	r12
+push	r14
 push	r15
 mov		r15, 0			;used for i
 
@@ -657,10 +663,11 @@ inc		r15
 mov		rax, r9
 mov		r14, 3
 mul		r14
+dec		rax
 
 cmp		r15, rax
 ; 	jmp getNextByte
-jle		fillRow
+jl		getNextByte
 
 ; return TRUE
 mov		rax, TRUE
@@ -675,6 +682,12 @@ doneRead:
 mov		rax, FALSE
 doneSuccess3:
 pop		r15
+pop		r14
+pop		r12
+pop		r11
+pop		r10
+pop		r9
+pop		r8
 ret
 
 
