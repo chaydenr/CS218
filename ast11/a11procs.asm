@@ -240,7 +240,7 @@ push	rsi
 ; !!!! CHECK THAT THIS PART WORKS PROPERLY !!!!
 mov		rax,	SYS_creat
 mov		rdi,	qword[r15+16]
-mov		rsi,	S_IXUSR
+mov		rsi,	S_IXUSR | S_IRUSR | S_IWUSR
 ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 push 	rcx
 push	rdx
@@ -381,7 +381,10 @@ mov		rax, SYS_read
 mov		rdi, r10		; !!!! may be able to delete !!!!
 mov		rsi, header
 mov		rdx, HEADER_SIZE
+
+push r11
 syscall
+pop r11
 
 ; check if file read was successful
 cmp		rax, 0
@@ -431,36 +434,45 @@ add		rax, HEADER_SIZE
 mov		dword[header + 2], eax
 
 ; store new width & height
-mov 	word[header + 18], r8w	
+mov 	word[header + 18], r8w
+mov 	word[header + 22], r9w	
 
 ; write updated header to new image
 
-mov rax, sys_write
-mov rdi, r11
-mov rsi, header
-mov rdx, HEADER_SIZE
-syscall
+mov 	rax, SYS_write
+mov 	rdi, r11
+mov 	rsi, header
+mov 	rdx, HEADER_SIZE
 
-; CHECK FILE!!! FOR DEBUGGING PURPOSES ONLY, DELETE LATER
-; read header from original image
-mov		rax, SYS_read
-mov		rdi, r11		; !!!! may be able to delete !!!!
-mov		rsi, header
-mov		rdx, HEADER_SIZE
+push 	r11
 syscall
+pop 	r11
 
-; check if file read was successful
+; check errWriteHdr
 cmp		rax, 0
-jl		errReadHdr_
+jl		errWriteHdr_
 
-; check if file is BMP
-cmp		byte[header], 'B'
-jne		errFileType_
-cmp		byte[header + 1], 'M'
-jne		errFileType_
-
-
-
+; CHECK FILE!!! FOR DEBUGGING PURPOSES ONLY, DELETE LATER!!
+; mov rax, SYS_close								; !!!!!
+; mov rdi, 4										; !!!!!
+; syscall											; !!!!!
+													; !!!!!
+; ; read header from original image					; !!!!!
+; mov		rax, SYS_read							; !!!!!
+; mov		rdi, 4		; !!!! may be able to delete !!!!
+; mov		rsi, header								; !!!!!
+; mov		rdx, HEADER_SIZE						; !!!!!
+; syscall											; !!!!!
+													; !!!!!
+; ; check if file read was successful				; !!!!!
+; cmp		rax, 0									; !!!!!
+; jl		errReadHdr_								; !!!!!
+													; !!!!!
+; ; check if file is BMP							; !!!!!
+; cmp		byte[header], 'B'						; !!!!!
+; jne		errFileType_							; !!!!!
+; cmp		byte[header + 1], 'M'					; !!!!!
+; jne		errFileType_							; !!!!!
 ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -489,7 +501,11 @@ jmp		doneError2
 
 errCompType_:
 mov		rdi, errCompType
-jmp doneError2
+jmp 	doneError2
+
+errWriteHdr_:
+mov 	rdi, errWriteHdr
+jmp 	doneError2
 
 doneError2:
 call	printString
