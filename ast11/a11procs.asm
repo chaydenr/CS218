@@ -369,6 +369,10 @@ push	r11
 push	r12
 push	r13
 
+; TRYING THIS OUT, MAY HAVE TO DELETE
+push	rdx
+push	rcx
+
 ; preserve argument values
 mov		r10, rdi		; read file 		(value)
 mov		r11, rsi		; write file 		(value)
@@ -400,8 +404,18 @@ jne		errFileType_
 
 ; check file size (width * height * 3 + HEADER_SIZE)
 mov		ax, word[header + 18]
+; save width to register
+; pop		rdx
+mov		qword[pixelCount], rax
 mov 	r14, 0
+; save height to register
 mov		r14w, word[header + 22]
+pop		rcx
+mov 	qword[rcx], r14				; save height to reg
+; push registers back to stack
+push	rcx
+; push	rdx
+
 mul 	r14
 ;mul		word[header + 22]
 mov		r14, 3
@@ -478,8 +492,11 @@ jl		errWriteHdr_
 
 ; if everything good, return true, old img width, old img height
 mov		rax, TRUE
-mov		rdx, r12
-mov		rcx, r13
+
+; mov		rdx, r12
+; mov 	r9, qword[r12]
+; mov		rcx, r13
+; mov		r10, qword[r13]
 jmp doneSuccess2
 
 ; !!!! Error messages !!!!!
@@ -512,6 +529,13 @@ call	printString
 mov 	rax, FALSE
 
 doneSuccess2:
+pop		rcx
+mov		r9, qword[rcx]
+pop		rdx
+mov		r9, qword[rdx]
+mov		r9, qword[pixelCount]
+mov		qword[rdx], r9
+mov		r10, qword[rdx]
 pop		r13
 pop		r12
 pop		r11
@@ -553,6 +577,7 @@ ret
 global readRow
 readRow:
 push	r15
+mov		r15, 0			;used for i
 
 ; preserve function args
 mov		r8, rdi 		; read file descriptor (value)
@@ -573,7 +598,7 @@ jl		fillRow
 
 ; 	if (eof)
 ; 	return FALSE, rax changed in doneRead
-cmp		wasEOF, TRUE
+cmp		byte[wasEOF], TRUE
 je		doneRead
 
 ; 	read file (BUFFSIZE bytes)
@@ -583,6 +608,7 @@ mov		rdi, r8
 mov		rsi, buffer
 mov		rdx, BUFF_SIZE
 syscall
+
 
 ; check if file read was successful
 ; 	if (read error) {
@@ -596,7 +622,7 @@ jl		errRead_
 cmp		rax, BUFF_SIZE
 jge		skipEOFTrue
 ; 		eof = TRUE
-mov		wasEOF, TRUE
+mov		byte[wasEOF], TRUE
 ; 		buffMax = actual read
 mov		qword[buffMax], rax
 ; 	}
@@ -609,12 +635,13 @@ mov		qword[curr], 0
 fillRow:
 ; chr = buffer[currIdx]
 mov		r12, 0
-mov		r12b, byte[buffer + curr]
+mov		r13, qword[curr]
+mov		r12b, byte[buffer + r13]
 ; currIdx++
 inc		qword[curr]
 
 ; rowBuffer[i] = chr
-mov		byte[buffer + r15], r12b
+mov		byte[r10 + r15], r12b
 ; i++
 inc		r15
 
@@ -653,9 +680,9 @@ ret
 ;	bool = writeRow(writeFileDesc, picWidth, rowBuffer);
 
 ;  Arguments are:
-;	- write file descriptor (value)
-;	- image width (value)
-;	- row buffer (address)
+;	- write file descriptor (value) - rdi
+;	- image width (value)			- rsi
+;	- row buffer (address)			- rdx
 
 ;  Returns:
 ;	N/A
@@ -671,7 +698,26 @@ ret
 
 global writeRow
 writeRow:
+mov		rax, rsi
+mov		r9, 3
+mul 	r9
+mov 	r8, rax
 
+mov		rax, SYS_write
+mov		rsi, rdx
+mov		rdx, r8
+; mov		rdx, rax
+syscall
+
+cmp 	rax, 0
+jl		doneError4
+mov		rax, TRUE
+jmp		doneSuccess4
+
+doneError4:
+mov		rax, FALSE
+
+doneSuccess4:
 ret
 
 
