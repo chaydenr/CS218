@@ -530,9 +530,9 @@ ret
 ;	bool = readRow(readFileDesc, picWidth, rowBuffer[]);
 
 ;   Arguments:
-;	- read file descriptor (value)
-;	- image width (value)
-;	- row buffer (address)
+;	- read file descriptor (value)	; rdi
+;	- image width (value)			; rsi
+;	- row buffer (address)			; rdx
 ;  Returns:
 ;	TRUE or FALSE
 
@@ -546,8 +546,80 @@ ret
 ;  ONLY by this routine and as such are not passed.
 
 
+
+; errRead		db	"Error, reading from source image file.", LF,
+; 		db	"Program terminated.", LF, NULL
+
 global readRow
 readRow:
+
+
+; preserve function args
+mov		r8, rdi 		; read file descriptor (value)
+mov		r9, rsi			; image width (value)
+mov 	r10, rdx		; row buffer (address)
+
+
+; Initializations
+; eof = False
+; currIdx = BUFFSIZE
+; buffMax = BUFFSIZE
+; i = 0
+
+getNextByte:
+; if (currIdx >= buffMax) {
+; 	if (eof)
+; 	return FALSE
+
+; 	read file (BUFFSIZE bytes)
+
+; mov rax, SYS_close								; !!!!!
+; mov rdi, 4										; !!!!!
+; syscall											; !!!!!
+													!!!!!
+; read header from original image					; !!!!!
+mov		rax, SYS_read							; !!!!!
+mov		rdi, r8		; !!!! may be able to delete !!!!
+mov		rsi, buffer								; !!!!!
+mov		rdx, BUFF_SIZE						; !!!!!
+syscall											; !!!!!
+; check if file read was successful				; !!!!!
+cmp		rax, 0									; !!!!!
+jl		errRead_								; !!!!!
+
+
+
+; 	if (read error) {
+; 		display error message
+; 		return False
+; 	}
+
+; 	if (actual read < reqeust read) {
+; 		eof = TRUE
+; 		buffMax = actual read
+; 	}
+
+; 	currIdx = 0
+; }
+
+; chr = buffer[currIdx]
+; currIdx++
+
+; rowBuffer[i] = chr
+; i++
+
+; if (i < picWidth * 3)
+; 	jmp getNextByte
+
+; return TRUE
+
+errRead_:
+mov		rdi, errRead
+call 	printString
+mov		rax, FALSE
+
+doneSuccess:
+
 
 ret
 
