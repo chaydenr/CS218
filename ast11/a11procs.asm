@@ -553,7 +553,6 @@ ret
 global readRow
 readRow:
 
-
 ; preserve function args
 mov		r8, rdi 		; read file descriptor (value)
 mov		r9, rsi			; image width (value)
@@ -576,7 +575,7 @@ getNextByte:
 ; mov rax, SYS_close								; !!!!!
 ; mov rdi, 4										; !!!!!
 ; syscall											; !!!!!
-													!!!!!
+;													!!!!!
 ; read header from original image					; !!!!!
 mov		rax, SYS_read							; !!!!!
 mov		rdi, r8		; !!!! may be able to delete !!!!
@@ -587,6 +586,16 @@ syscall											; !!!!!
 cmp		rax, 0									; !!!!!
 jl		errRead_								; !!!!!
 
+mov r15, 0
+mov		r15b, byte[buffer]
+mov		r15b, byte[buffer+1]
+mov		r15b, byte[buffer+2]
+mov		r15b, byte[buffer+3]
+mov		r15b, byte[buffer+4]
+mov		r15b, byte[buffer+5]
+mov		r15b, byte[buffer+6]
+mov		r15b, byte[buffer+7]
+mov		r15b, byte[buffer+8]
 
 
 ; 	if (read error) {
@@ -618,7 +627,7 @@ mov		rdi, errRead
 call 	printString
 mov		rax, FALSE
 
-doneSuccess:
+doneSuccess3:
 
 
 ret
