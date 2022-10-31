@@ -1,3 +1,11 @@
+; *****************************************************************
+;  Name: Chayden Richardson
+;  NSHE ID: 2000735977
+;  Section: 1002
+;  Assignment: 11A
+;  Description:  This program will use a buffer to create a mini thumbnail
+; 	of a larger image. 
+
 ;  CS 218 - Assignment #11
 ;  Functions Template
 
