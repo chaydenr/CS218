@@ -552,12 +552,12 @@ ret
 
 global readRow
 readRow:
+push	r15
 
 ; preserve function args
 mov		r8, rdi 		; read file descriptor (value)
 mov		r9, rsi			; image width (value)
 mov 	r10, rdx		; row buffer (address)
-
 
 ; Initializations
 ; eof = False
@@ -567,69 +567,79 @@ mov 	r10, rdx		; row buffer (address)
 
 getNextByte:
 ; if (currIdx >= buffMax) {
+mov		r11, qword[curr]
+cmp		r11, qword[buffMax]
+jl		fillRow
+
 ; 	if (eof)
-; 	return FALSE
+; 	return FALSE, rax changed in doneRead
+cmp		wasEOF, TRUE
+je		doneRead
 
 ; 	read file (BUFFSIZE bytes)
+; read header from original image
+mov		rax, SYS_read
+mov		rdi, r8
+mov		rsi, buffer
+mov		rdx, BUFF_SIZE
+syscall
 
-; mov rax, SYS_close								; !!!!!
-; mov rdi, 4										; !!!!!
-; syscall											; !!!!!
-;													!!!!!
-; read header from original image					; !!!!!
-mov		rax, SYS_read							; !!!!!
-mov		rdi, r8		; !!!! may be able to delete !!!!
-mov		rsi, buffer								; !!!!!
-mov		rdx, BUFF_SIZE						; !!!!!
-syscall											; !!!!!
-; check if file read was successful				; !!!!!
-cmp		rax, 0									; !!!!!
-jl		errRead_								; !!!!!
-
-mov r15, 0
-mov		r15b, byte[buffer]
-mov		r15b, byte[buffer+1]
-mov		r15b, byte[buffer+2]
-mov		r15b, byte[buffer+3]
-mov		r15b, byte[buffer+4]
-mov		r15b, byte[buffer+5]
-mov		r15b, byte[buffer+6]
-mov		r15b, byte[buffer+7]
-mov		r15b, byte[buffer+8]
-
-
+; check if file read was successful
 ; 	if (read error) {
 ; 		display error message
 ; 		return False
 ; 	}
+cmp		rax, 0
+jl		errRead_
 
 ; 	if (actual read < reqeust read) {
+cmp		rax, BUFF_SIZE
+jge		skipEOFTrue
 ; 		eof = TRUE
+mov		wasEOF, TRUE
 ; 		buffMax = actual read
+mov		qword[buffMax], rax
 ; 	}
 
+skipEOFTrue:
 ; 	currIdx = 0
+mov		qword[curr], 0
 ; }
 
+fillRow:
 ; chr = buffer[currIdx]
+mov		r12, 0
+mov		r12b, byte[buffer + curr]
 ; currIdx++
+inc		qword[curr]
 
 ; rowBuffer[i] = chr
+mov		byte[buffer + r15], r12b
 ; i++
+inc		r15
 
 ; if (i < picWidth * 3)
+mov		rax, r9
+mov		r14, 3
+mul		r14
+
+cmp		r15, rax
 ; 	jmp getNextByte
+jle		fillRow
 
 ; return TRUE
+mov		rax, TRUE
+jmp		doneSuccess3
 
 errRead_:
 mov		rdi, errRead
 call 	printString
 mov		rax, FALSE
 
+doneRead:
+mov		rax, FALSE
 doneSuccess3:
-
-
+pop		r15
 ret
 
 
