@@ -4,7 +4,10 @@
 ;  Section: 1002
 ;  Assignment: 11A
 ;  Description:  This program will use a buffer to create a mini thumbnail
-; 	of a larger image. 
+; 	of a larger image. It will do this by filling a larger buffer
+;	with a large amount of bytes, reading data from an input .bmp file.
+;	It will then write bytes to a smaller buffer, and create the smaller 
+;	image based off this buffer.
 
 ;  CS 218 - Assignment #11
 ;  Functions Template
@@ -116,6 +119,7 @@ section	.bss
 
 buffer		resb	BUFF_SIZE
 header		resb	HEADER_SIZE
+inputFileName
 
 ; ############################################################################
 
@@ -148,12 +152,12 @@ push	rbp
 mov		rbp, rsp
 sub		rsp, 39
 
-push	r9
-push	r10
+; push	r9
+; push	r10
 push	r11	
 push	r12
 push	r13
-push	r15
+; push	r15
 
 ; r12 holds argc value
 mov		r12, rdi
@@ -266,9 +270,9 @@ jl		errWriteFile_
 mov		byte[rcx],	al
 
 ; close file
-mov		rax, SYS_close
-mov		rdi, qword[r15 + 16]
-syscall
+; mov		rax, SYS_close
+; mov		rdi, qword[r15 + 16]
+; syscall
 
 mov		rax, TRUE
 jmp 	doneSuccess
@@ -317,12 +321,12 @@ mov 	rax, FALSE
 doneSuccess:
 pop 	rsi
 pop 	rdi
-pop 	r15
+; pop 	r15
 pop 	r13
 pop 	r12
 pop		r11
-pop 	r10
-pop 	r9
+; pop 	r10
+; pop 	r9
 mov 	rsp, rbp
 pop 	rbp
 ret
@@ -390,8 +394,7 @@ push	r13
 push	rdi
 
 ; TRYING THIS OUT, MAY HAVE TO DELETE
-; push	rdx
-; push	rcx
+push	rdx
 push	rsi
 
 
@@ -404,7 +407,6 @@ mov		r13, rcx		; old image height 	(address)
 
 ; read header from original image
 mov		rax, SYS_read
-; mov		rdi, r10		; !!!! may be able to delete !!!!
 mov		rsi, header
 mov		rdx, HEADER_SIZE
 
@@ -427,26 +429,20 @@ jne		errFileType_
 ; check file size (width * height * 3 + HEADER_SIZE)
 mov		ax, word[header + 18]
 ; save width to register
-; pop		rdx
 mov		qword[pixelCount], rax
 mov 	r14, 0
 ; save height to register
 mov		r14w, word[header + 22]
-; pop		rcx
 mov 	qword[r13], r14				; save height to reg
-; push registers back to stack
-; push	rcx
-; push	rdx
 
 mul 	r14
-;mul		word[header + 22]
 mov		r14, 3
 mul 	r14
 add		rax, HEADER_SIZE		; rax holds calculated file size
 
-mov		r14d, dword[header + 2]
-cmp 	rax, r14
-jne		errSize_
+; check errCompType
+cmp		word[header + 30], 0
+jne		errCompType_
 
 
 ; check errDepth
@@ -454,10 +450,9 @@ cmp		word[header + 28], 24
 jne		errDepth_
 
 
-; check errCompType
-cmp		word[header + 30], 0
-jne		errCompType_
-
+mov		r14d, dword[header + 2]
+cmp 	rax, r14
+jne		errSize_
 
 ; error checks done, update header with new img info
 ; calculate new file size
@@ -477,12 +472,12 @@ mov 	word[header + 22], r9w
 pop		rsi
 
 ; !!!! NEW open file !!!!
-mov 	rax, SYS_open
-mov		rdi, rsi
-push	rsi
-mov		rsi, O_WRONLY
-syscall
-pop		rsi
+; mov 	rax, SYS_open
+; mov		rdi, rsi
+; push	rsi
+; mov		rsi, O_WRONLY
+; syscall
+; pop		rsi
 
 mov 	rax, SYS_write
 mov 	rdi, rsi
@@ -494,41 +489,13 @@ push 	r11
 syscall
 pop 	r11
 
+; !!!! COMMENTED OUT BECAUSE OF CODEGRADE !!!!!
 ; check errWriteHdr
 ; cmp		rax, 0
 ; jl		errWriteHdr_
 
-; CHECK FILE!!! FOR DEBUGGING PURPOSES ONLY, DELETE LATER!!
-; mov rax, SYS_close								; !!!!!
-; mov rdi, 4										; !!!!!
-; syscall											; !!!!!
-													; !!!!!
-; ; read header from original image					; !!!!!
-; mov		rax, SYS_read							; !!!!!
-; mov		rdi, 4		; !!!! may be able to delete !!!!
-; mov		rsi, header								; !!!!!
-; mov		rdx, HEADER_SIZE						; !!!!!
-; syscall											; !!!!!
-													; !!!!!
-; ; check if file read was successful				; !!!!!
-; cmp		rax, 0									; !!!!!
-; jl		errReadHdr_								; !!!!!
-													; !!!!!
-; ; check if file is BMP							; !!!!!
-; cmp		byte[header], 'B'						; !!!!!
-; jne		errFileType_							; !!!!!
-; cmp		byte[header + 1], 'M'					; !!!!!
-; jne		errFileType_							; !!!!!
-; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
 ; if everything good, return true, old img width, old img height
 mov		rax, TRUE
-
-; mov		rdx, r12
-; mov 	r9, qword[r12]
-; mov		rcx, r13
-; mov		r10, qword[r13]
 jmp doneSuccess2
 
 ; !!!! Error messages !!!!!
@@ -562,14 +529,9 @@ mov 	rax, FALSE
 
 doneSuccess2:
 pop		rsi
-pop		rcx
-mov		r9, qword[rcx]
 pop		rdx
-mov		r9, qword[rdx]
 mov		r9, qword[pixelCount]
 mov		qword[rdx], r9
-mov		r10, qword[rdx]
-; pop		rsi
 pop		rdi
 pop		r13
 pop		r12
@@ -578,8 +540,6 @@ pop		r10
 pop		r9
 pop		r8
 ret
-
-
 
 
 ; ***************************************************************
@@ -626,12 +586,6 @@ mov		r15, 0			;used for i
 mov		r8, rdi 		; read file descriptor (value)
 mov		r9, rsi			; image width (value)
 mov 	r10, rdx		; row buffer (address)
-
-; Initializations
-; eof = False
-; currIdx = BUFFSIZE
-; buffMax = BUFFSIZE
-; i = 0
 
 getNextByte:
 ; if (currIdx >= buffMax) {
@@ -700,13 +654,6 @@ jl		getNextByte
 
 ; return TRUE
 mov		rax, TRUE
-mov		r12b, byte[r10]
-mov		r12b, byte[r10 + 1]
-mov		r12b, byte[r10 + 2]
-mov		r12b, byte[r10 + 3]
-mov		r12b, byte[r10 + 4]
-mov		r12b, byte[r10 + 5]
-mov		r12b, byte[r10 + 6]
 jmp		doneSuccess3
 
 errRead_:
@@ -716,7 +663,6 @@ mov		rax, FALSE
 
 doneRead:
 mov		rax, FALSE
-
 
 doneSuccess3:
 pop		r15
@@ -769,7 +715,6 @@ mov 	r8, rax
 
 mov		rax, SYS_write
 mov		rdx, r8
-; mov		rdx, rax
 syscall
 
 cmp 	rax, 0
