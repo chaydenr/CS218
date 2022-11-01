@@ -248,7 +248,7 @@ push	rsi
 ; !!!! CHECK THAT THIS PART WORKS PROPERLY !!!!
 mov		rax,	SYS_creat
 mov		rdi,	qword[r15+16]
-mov		rsi,	S_IXUSR | S_IRUSR | S_IWUSR
+mov		rsi,	S_IRUSR | S_IWUSR
 ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 push 	rcx
 push	rdx
@@ -262,6 +262,12 @@ cmp		rax,	0
 jl		errWriteFile_
 mov		byte[rcx],	al
 
+; !!!! NEW close file !!!!!
+mov		rax, SYS_close
+mov		rdi, qword[r15 + 16]
+syscall
+
+mov		rax, TRUE		; !!!!!!! NEW !!!!!!!
 jmp 	doneSuccess
 
 ; !!!!!! ERROR SECTION !!!!!!
@@ -372,14 +378,19 @@ ret
 
 global setImageInfo
 setImageInfo:
+push	r8
+push	r9
 push	r10
 push	r11
 push	r12
 push	r13
+push	rdi
 
 ; TRYING THIS OUT, MAY HAVE TO DELETE
 push	rdx
 push	rcx
+push	rsi
+
 
 ; preserve argument values
 mov		r10, rdi		; read file 		(value)
@@ -418,10 +429,10 @@ mov		qword[pixelCount], rax
 mov 	r14, 0
 ; save height to register
 mov		r14w, word[header + 22]
-pop		rcx
-mov 	qword[rcx], r14				; save height to reg
+; pop		rcx
+mov 	qword[r13], r14				; save height to reg
 ; push registers back to stack
-push	rcx
+; push	rcx
 ; push	rdx
 
 mul 	r14
@@ -460,19 +471,28 @@ mov 	word[header + 18], r8w
 mov 	word[header + 22], r9w	
 
 ; write updated header to new image
+pop		rsi
+
+; !!!! NEW open file !!!!
+mov 	rax, SYS_open
+mov		rdi, rsi
+push	rsi
+mov		rsi, O_WRONLY
+pop		rsi
 
 mov 	rax, SYS_write
-mov 	rdi, r11
+mov 	rdi, rsi
 mov 	rsi, header
 mov 	rdx, HEADER_SIZE
 
+push	rsi
 push 	r11
 syscall
 pop 	r11
 
 ; check errWriteHdr
-cmp		rax, 0
-jl		errWriteHdr_
+; cmp		rax, 0
+; jl		errWriteHdr_
 
 ; CHECK FILE!!! FOR DEBUGGING PURPOSES ONLY, DELETE LATER!!
 ; mov rax, SYS_close								; !!!!!
@@ -537,6 +557,7 @@ call	printString
 mov 	rax, FALSE
 
 doneSuccess2:
+pop		rsi
 pop		rcx
 mov		r9, qword[rcx]
 pop		rdx
@@ -544,10 +565,14 @@ mov		r9, qword[rdx]
 mov		r9, qword[pixelCount]
 mov		qword[rdx], r9
 mov		r10, qword[rdx]
+; pop		rsi
+pop		rdi
 pop		r13
 pop		r12
 pop		r11
 pop		r10
+pop		r9
+pop		r8
 ret
 
 
@@ -663,7 +688,7 @@ inc		r15
 mov		rax, r9
 mov		r14, 3
 mul		r14
-dec		rax
+;dec		rax
 
 cmp		r15, rax
 ; 	jmp getNextByte
@@ -671,6 +696,13 @@ jl		getNextByte
 
 ; return TRUE
 mov		rax, TRUE
+mov		r12b, byte[r10]
+mov		r12b, byte[r10 + 1]
+mov		r12b, byte[r10 + 2]
+mov		r12b, byte[r10 + 3]
+mov		r12b, byte[r10 + 4]
+mov		r12b, byte[r10 + 5]
+mov		r12b, byte[r10 + 6]
 jmp		doneSuccess3
 
 errRead_:
@@ -680,6 +712,8 @@ mov		rax, FALSE
 
 doneRead:
 mov		rax, FALSE
+
+
 doneSuccess3:
 pop		r15
 pop		r14
@@ -719,13 +753,17 @@ ret
 
 global writeRow
 writeRow:
+push	rdx
+push 	r8
+push	r9
+
 mov		rax, rsi
+mov		rsi, rdx
 mov		r9, 3
 mul 	r9
 mov 	r8, rax
 
 mov		rax, SYS_write
-mov		rsi, rdx
 mov		rdx, r8
 ; mov		rdx, rax
 syscall
@@ -739,6 +777,9 @@ doneError4:
 mov		rax, FALSE
 
 doneSuccess4:
+pop		r9
+pop		r8
+pop		rdx
 ret
 
 
