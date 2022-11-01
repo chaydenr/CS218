@@ -245,11 +245,12 @@ mov		byte[rdx],	al
 push	rdi
 push	rsi
 
-; !!!! CHECK THAT THIS PART WORKS PROPERLY !!!!
+; create output file with read and write persmissions
 mov		rax,	SYS_creat
 mov		rdi,	qword[r15+16]
 mov		rsi,	S_IRUSR | S_IWUSR
-; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+; preserve registers before syscall
 push 	rcx
 push	rdx
 syscall
@@ -258,16 +259,18 @@ pop		rcx
 
 pop		rsi
 pop		rdi
+
+; check if error writing file
 cmp		rax,	0
 jl		errWriteFile_
 mov		byte[rcx],	al
 
-; !!!! NEW close file !!!!!
+; close file
 mov		rax, SYS_close
 mov		rdi, qword[r15 + 16]
 syscall
 
-mov		rax, TRUE		; !!!!!!! NEW !!!!!!!
+mov		rax, TRUE
 jmp 	doneSuccess
 
 ; !!!!!! ERROR SECTION !!!!!!
@@ -387,8 +390,8 @@ push	r13
 push	rdi
 
 ; TRYING THIS OUT, MAY HAVE TO DELETE
-push	rdx
-push	rcx
+; push	rdx
+; push	rcx
 push	rsi
 
 
@@ -401,7 +404,7 @@ mov		r13, rcx		; old image height 	(address)
 
 ; read header from original image
 mov		rax, SYS_read
-mov		rdi, r10		; !!!! may be able to delete !!!!
+; mov		rdi, r10		; !!!! may be able to delete !!!!
 mov		rsi, header
 mov		rdx, HEADER_SIZE
 
@@ -478,6 +481,7 @@ mov 	rax, SYS_open
 mov		rdi, rsi
 push	rsi
 mov		rsi, O_WRONLY
+syscall
 pop		rsi
 
 mov 	rax, SYS_write
