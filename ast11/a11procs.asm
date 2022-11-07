@@ -245,6 +245,7 @@ cmp		rax,	0
 jl		errReadFile_
 mov		byte[rdx],	al
 
+
 ; argv[2] good, check if open success argv[3]
 push	rdi
 push	rsi
