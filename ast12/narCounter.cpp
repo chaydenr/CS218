@@ -21,6 +21,7 @@ using namespace std;
 //	The "C" specifies to use the standard C/C++ style
 //	calling convention.
 
+
 extern "C" bool getUserArgs(int, char* [], int *, unsigned long *);
 extern "C" void narcissisticNumberCounter();
 
@@ -44,7 +45,6 @@ int main(int argc, char* argv[])
 	thread	*thdList;
 
 	unsigned long hwthd = thread::hardware_concurrency();
-
 	if (getUserArgs(argc, argv, &threadCount, &userLimit)) {
 
 		// cute header messages
